@@ -8,8 +8,7 @@ public class JottTokenizer {
         String look="space";
         int spot=0;
         int end_of_line=0;
-        int print=0;
-        int end_print=0;
+        int end_par=0;
         int comma=0;
         String previous="space";
         for (String token:args) {
@@ -17,11 +16,18 @@ public class JottTokenizer {
                 end_of_line=1;
                 token=token.substring(0,token.length()-1);
             }
+            if (token.charAt(token.length() - 1) == ')') {
+                end_par = 1;
+                token = token.substring(0, token.length() - 1);
+            }
+            if(token.charAt(token.length()-1)==','){
+                comma=1;
+                token=token.substring(0,token.length()-1);
+            }
             if(token.length()-spot>=6) {
                 if (token.charAt(spot) == 'p' && token.charAt(spot + 1) == 'r' && token.charAt(spot + 2) == 'i' &&
                         token.charAt(spot + 3) == 'n' && token.charAt(spot + 4) == 't' && token.charAt(spot + 5) == '(') {
                     Tokens.add("print");
-                    print=1;
                     if(token.length()==6) {
                         continue;
                     }
@@ -30,16 +36,31 @@ public class JottTokenizer {
                     }
                 }
             }
-
-            if(print==1){
-                if(token.length()>1) {
-                    if (token.charAt(token.length() - 1) == ')') {
-                        end_print = 1;
-                        print = 0;
-                        token = token.substring(0, token.length() - 1);
+            if(token.length()-spot>=7) {
+                if (token.charAt(0) == 'c' && token.charAt(1) == 'o' && token.charAt(2) == 'n'
+                        && token.charAt(3) == 'c' && token.charAt(4) == 'a' && token.charAt(5) == 't'
+                        && token.charAt(6) == '(') {
+                    Tokens.add("concat");
+                    if(token.length()==7) {
+                        continue;
+                    }
+                    else{
+                        token=token.substring(7);
+                    }
+                }
+                else if (token.charAt(0) == 'c' && token.charAt(1) == 'h' && token.charAt(2) == 'a'
+                        && token.charAt(3) == 'r' && token.charAt(4) == 'A' && token.charAt(5) == 't'
+                        && token.charAt(6) == '(') {
+                    Tokens.add("charAt");
+                    if(token.length()==7) {
+                        continue;
+                    }
+                    else{
+                        token=token.substring(7);
                     }
                 }
             }
+
 
             System.out.println(token);
             if (previous.equals("quote")) {
@@ -64,8 +85,8 @@ public class JottTokenizer {
                 }
                 if (look.equals("quote")) {
                     previous = "quote";
-                    spot += 1;
                     look = tokenizer(token, previous, spot);
+                    spot += 1;
                     if (look == null) {
                         System.out.println("OH NO");
                         System.exit(0);
@@ -87,9 +108,13 @@ public class JottTokenizer {
                 }
             }
             spot = 0;
-            if(end_print==1){
+            if(end_par==1){
                 Tokens.add("end_parenthesis");
-                end_print=0;
+                end_par=0;
+            }
+            if(comma==1){
+                Tokens.add("comma");
+                comma=0;
             }
             if(end_of_line==1){
                 Tokens.add("end_stmt");
@@ -122,6 +147,16 @@ public class JottTokenizer {
                         && token.charAt(3) == 'e' && token.charAt(4) == 'g' && token.charAt(5) == 'e'
                         && token.charAt(4) == 'r') {
                     return "type_Integer";
+                }
+                if (token.charAt(0) == 'c' && token.charAt(1) == 'o' && token.charAt(2) == 'n'
+                        && token.charAt(3) == 'c' && token.charAt(4) == 'a' && token.charAt(5) == 't'
+                        && token.charAt(6) == '(') {
+                    return "concat";
+                }
+                if(token.charAt(0) == 'c' && token.charAt(1) == 'h' && token.charAt(2) == 'a'
+                        && token.charAt(3) == 'r' && token.charAt(4) == 'A' && token.charAt(5) == 't'
+                        && token.charAt(6) == '(') {
+                    return "charAt";
                 }
             }
             if (token.charAt(spot) == '+' && token.length()==1) {
@@ -173,6 +208,9 @@ public class JottTokenizer {
                 }
             }
             if (token.charAt(spot) == '"') {
+                if(token.length()==spot+1){
+                    return "quote";
+                }
                 return tokenizer(token, "quote", spot+1);
             }
         }
