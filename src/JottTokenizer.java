@@ -3,7 +3,7 @@ package src;
 import java.util.ArrayList;
 
 public class JottTokenizer {
-    public static void main(String[] args) {
+    public static void JottTokenizer(String[] args) {
         ArrayList<String> Tokens = new ArrayList<String>();
         String look="space";
         int spot=0;
@@ -16,13 +16,35 @@ public class JottTokenizer {
                 end_of_line=1;
                 token=token.substring(0,token.length()-1);
             }
-            if (token.charAt(token.length() - 1) == ')') {
-                end_par = 1;
-                token = token.substring(0, token.length() - 1);
+            if(token.length()!=0) {
+                while (token.charAt(token.length() - 1) == ')') {
+                    end_par += 1;
+                    token = token.substring(0, token.length() - 1);
+                    if (token.length() == 0) {
+                        break;
+                    }
+                }
             }
-            if(token.charAt(token.length()-1)==','){
-                comma=1;
-                token=token.substring(0,token.length()-1);
+            if(token.length()!=0) {
+                if (token.charAt(token.length() - 1) == ',') {
+                    comma = 1;
+                    token = token.substring(0, token.length() - 1);
+                }
+            }
+            if(token.length()==0){
+                while(end_par>=1){
+                    Tokens.add("end_parenthesis");
+                    end_par-=1;
+                }
+                if(comma==1){
+                    Tokens.add("comma");
+                    comma=0;
+                }
+                if(end_of_line==1){
+                    Tokens.add("end_stmt");
+                    end_of_line=0;
+                }
+                break;
             }
             if(token.length()-spot>=6) {
                 if (token.charAt(spot) == 'p' && token.charAt(spot + 1) == 'r' && token.charAt(spot + 2) == 'i' &&
@@ -63,54 +85,47 @@ public class JottTokenizer {
 
 
             System.out.println(token);
-            if (previous.equals("quote")) {
-                while (look.equals("quote")) {
-                    if (spot >= token.length()) {
-                        previous = "quote";
-                        break;
-                    }
-                    look = tokenizer(token, previous, spot);
-                    spot += 1;
-                    if (look.equals("string")) {
-                        Tokens.add(look);
-                        previous = "space";
-                    }
-                }
-            }
-            else {
-                look = (tokenizer(token, previous, spot));
-                if (look == null) {
-                    System.out.println("OH NO");
-                    System.exit(0);
-                }
-                if (look.equals("quote")) {
-                    previous = "quote";
-                    look = tokenizer(token, previous, spot);
-                    spot += 1;
-                    if (look == null) {
-                        System.out.println("OH NO");
-                        System.exit(0);
-                    }
+                if (previous.equals("quote")) {
                     while (look.equals("quote")) {
-                        spot += 1;
-                        if (spot == token.length()) {
+                        if (spot >= token.length()) {
                             previous = "quote";
                             break;
                         }
                         look = tokenizer(token, previous, spot);
+                        spot += 1;
                         if (look.equals("string")) {
                             Tokens.add(look);
                             previous = "space";
                         }
                     }
                 } else {
-                    Tokens.add(look);
+                    look = (tokenizer(token, previous, spot));
+                    if (look == null) {
+                        System.out.println("OH NO");
+                        System.exit(0);
+                    }
+                    if (look.equals("quote")) {
+                        while (look.equals("quote")) {
+                            spot += 1;
+                            if (spot == token.length()) {
+                                previous = "quote";
+                                break;
+                            }
+                            look = tokenizer(token, previous, spot);
+                            if (look.equals("string")) {
+                                Tokens.add(look);
+                                previous = "space";
+                            }
+                        }
+                    } else {
+                        Tokens.add(look);
+                    }
                 }
-            }
+
             spot = 0;
-            if(end_par==1){
+            while(end_par>=1){
                 Tokens.add("end_parenthesis");
-                end_par=0;
+                end_par-=1;
             }
             if(comma==1){
                 Tokens.add("comma");
