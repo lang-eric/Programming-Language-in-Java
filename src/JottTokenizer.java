@@ -1,3 +1,28 @@
+/* This is the Jott Tokenizer, it will take the entire input as one string and tokenize is accordingly
+ * '+' - plus
+ * '-' - minus
+ * '*' - mult
+ * '\' - divide
+ * '^' - power
+ * ',' - comma
+ * ';' - end_stmt
+ * '(' - start_paren
+ * ')' - end_paren
+ * '=' - assign
+ * 'String' - type_String
+ * 'Integer' - type_Integer
+ * 'Double' - type_Double
+ * 'print(' - print
+ * 'charAt(' - charAt
+ * 'concat(' - concat
+ * A set of letters and numbers that begins with an uppercase letter- upper_keyword
+ * A set of letters and numbers that begins with a lower letter- lower_keyword
+ * A set of letters, numbers, and spaces surrounded by quoation marks ('"') - string
+ */
+
+
+
+
 package src;
 
 import java.util.ArrayList;
@@ -48,7 +73,7 @@ public class JottTokenizer {
                 Tokens.add(new Token("minus","-"));
             }
             else if (input[count] == '*') {
-                Tokens.add(new Token("times","*"));
+                Tokens.add(new Token("mult","*"));
             }
             else if (input[count] == '/') {
                 Tokens.add(new Token("divide","/"));
@@ -57,10 +82,10 @@ public class JottTokenizer {
                 Tokens.add(new Token("power","^"));
             }
             else if (input[count] == ')') {
-                Tokens.add(new Token("end_parenthesis",")"));;
+                Tokens.add(new Token("end_paren",")"));;
             }
             else if (input[count] == '(') {
-                Tokens.add(new Token("start_parenthesis","("));
+                Tokens.add(new Token("start_paren","("));
             }
             else if (input[count] == ';') {
                 Tokens.add(new Token("end_stmt",";"));
@@ -119,7 +144,7 @@ public class JottTokenizer {
                 end=1;
                 if(input[count]==46) {
                     if(number_type==1) {
-                        System.out.println("Error! Two decimals in a number, you idiot!");
+                        System.out.println("Error! Two decimals in a number, you fool!");
                         System.exit(0);
                         break;
                     }
@@ -218,6 +243,8 @@ public class JottTokenizer {
                     System.exit(0);
                 }
             }
+            System.out.println("Not sure what "+ input[count]+ " is, cannot process!");
+            System.exit(0);
         }
         return Tokens;
 }
