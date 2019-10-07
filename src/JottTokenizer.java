@@ -7,22 +7,40 @@ import java.util.ArrayList;
 public class JottTokenizer {
     public static class Token{
         String type;
+
+        public String getType() {
+            return type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
         String value;
         public Token(String type, String value){
             this.type=type;
             this.value=value;
         }
+
     }
 
 
-    public static void JottTokenizer(String args) {
-        ArrayList<Character> temp=new ArrayList<Character>();
-        ArrayList<Token> Tokens = new ArrayList<Token>();
+    public static ArrayList<Token> JottTokenizer(String args) {
+
+        ArrayList<Character> temp=new ArrayList<>();
+        ArrayList<Token> Tokens = new ArrayList<>();
         char[] input=args.toCharArray();
         int length=input.length;
         int number_type=0;
+        int end=0;
         for (int count=0;count<length;count++) {
             number_type=0;
+            if (input[count]=='\n'){
+                continue;
+            }
+            if (input[count]== ' '){
+                continue;
+            }
             if (input[count] == '+') {
                 Tokens.add(new Token("plus","+"));
             }
@@ -98,6 +116,7 @@ public class JottTokenizer {
             }
 
             while(input[count] >= 48 && input[count] <= 57||input[count]==46) {
+                end=1;
                 if(input[count]==46) {
                     if(number_type==1) {
                         System.out.println("Error! Two decimals in a number, you idiot!");
@@ -129,7 +148,10 @@ public class JottTokenizer {
                     break;
                 }
             }
-
+            if(end==1){
+                end=0;
+                continue;
+            }
             if (input[count] >= 97 && input[count] <= 122) {
                 while((input[count] >= 97 && input[count] <= 122)||
                         ((input[count])>=65 && input[count]<=90)
@@ -149,6 +171,7 @@ public class JottTokenizer {
                         break;
                     }
                 }
+                continue;
             }
             if (input[count] >= 65 && input[count] <= 90) {
                 while((input[count] >= 97 && input[count] <= 122)||
@@ -156,217 +179,46 @@ public class JottTokenizer {
                         ||(input[count] >= 48 && input[count] <= 57)){
                     temp.add(input[count]);
                     count++;
+                    if(count==length) {
+                        Tokens.add(new Token("upper_keyword", temp.toString()));
+                        temp.removeAll(temp);
+                        break;
+                    }
                     if(!(input[count] >= 97 && input[count] <= 122)&&
                             !((input[count])>=65 && input[count]<=90)
-                            &&!(input[count] >= 48 && input[count] <= 57)
-                            || count==length) {
+                            &&!(input[count] >= 48 && input[count] <= 57)) {
                         Tokens.add(new Token("upper_keyword", temp.toString()));
                         temp.removeAll(temp);
                         break;
                     }
                 }
-            }
-            if(input[s]ot)>=65 && input[s]ot)<=90){
-                if (input.length() == spot + 1) {
-                    return "upper_keyword";
-                } else {
-                    return tokenizer(input, "upper_keyword", spot + 1);
-                }
-            }
-            if (input[s]ot) == '"') {
-                if(input.length()==spot+1){
-                    return "quote";
-                }
-                return tokenizer(input, "quote", spot+1);
-            }
-        }
-        if(previous.equals("number")){
-            if(input.length()==spot+1) {
-                return "number";
-            }
-            if (input[s]ot) == '.') {
-                return tokenizer(input, "period", spot+1);
-            }
-            else{
-                return tokenizer(input, "number", spot+1);
-            }
-        }
-        if(previous.equals("period")){
-            if(input[s]ot) >= 48 && input[s]ot) <= 57){
-                if(input.length()==spot+1){
-                    return "double";
-                }
-                return tokenizer(input, "period", spot+1);
-            }
-        }
-        if(previous.equals("quote")){
-            if (input[s]ot) == '"' && input.length()==spot+1) {
-                return "string";
-            }
-            if (input[s]ot) == ' '||(input[s]ot) >= 48 && input[s]ot) <= 57)||
-                    (input[s]ot)>=65 && input[s]ot)<=90)||(input[s]ot) >= 97 && input[s]ot) <= 122)) {
-                if(input.length()==spot+1){
-                    return "quote";
-                }
-                return tokenizer(input, "quote", spot+1);
-            }
-        }
-        if(previous.equals("lower_keyword")){
-            if (input[s]ot) == ' '||(input[s]ot) >= 48 && input[s]ot) <= 57)||
-                    (input[s]ot) >= 97 && input[s]ot) <= 122)) {
-                if(input.length()==spot+1){
-                    return "lower_keyword";
-                }
-                else{
-                    return tokenizer(input, "lower_keyword", spot+1);
-                }
-            }
-        }
-        if(previous.equals("upper_keyword")){
-            if (input[s]ot) == ' '||(input[s]ot) >= 48 && input[s]ot) <= 57)||
-                    (input[s]ot) >= 97 && input[s]ot) <= 122)) {
-                if(input.length()==spot+1){
-                    return "upper_keyword";
-                }
-                else{
-                    return tokenizer(input, "upper_keyword", spot+1);
-                }
-
-
-
-            if(input[i]put.length()-1)==';'){
-                end_of_line=1;
-                input=input.substring(0,input.length()-1);
-            }
-            if(input.length()!=0) {
-                while (input[i]put.length() - 1) == ')') {
-                    end_par += 1;
-                    input = input.substring(0, input.length() - 1);
-                    if (input.length() == 0) {
-                        break;
-                    }
-                }
-            }
-            if(input.length()!=0) {
-                if (input[i]put.length() - 1) == ',') {
-                    comma = 1;
-                    input = input.substring(0, input.length() - 1);
-                }
-            }
-            if(input.length()==0){
-                while(end_par>=1){
-                    Tokens.add("end_parenthesis");
-                    end_par-=1;
-                }
-                if(comma==1){
-                    Tokens.add("comma");
-                    comma=0;
-                }
-                if(end_of_line==1){
-                    Tokens.add("end_stmt");
-                    end_of_line=0;
-                }
-                break;
-            }
-            if(input.length()-spot>=6) {
-                if (input[s]ot) == 'p' && input[s]ot + 1) == 'r' && input[s]ot + 2) == 'i' &&
-                        input[s]ot + 3) == 'n' && input[s]ot + 4) == 't' && input[s]ot + 5) == '(') {
-                    Tokens.add("print");
-                    if(input.length()==6) {
-                        continue;
-                    }
-                    else{
-                        input=input.substring(6);
-                    }
-                }
-            }
-            if(input.length()-spot>=7) {
-                if (input[0] == 'c' && input[1] == 'o' && input[2] == 'n'
-                        && input[3] == 'c' && input[4] == 'a' && input[5] == 't'
-                        && input[6] == '(') {
-                    Tokens.add("concat");
-                    if(input.length()==7) {
-                        continue;
-                    }
-                    else{
-                        input=input.substring(7);
-                    }
-                }
-                else if (input[0] == 'c' && input[1] == 'h' && input[2] == 'a'
-                        && input[3] == 'r' && input[4] == 'A' && input[5] == 't'
-                        && input[6] == '(') {
-                    Tokens.add();
-                    if(input.length()==7) {
-                        continue;
-                    }
-                    else{
-                        input=input.substring(7);
-                    }
-                }
+                continue;
             }
 
-
-            System.out.println(input);
-                if (previous.equals("quote")) {
-                    while (look.equals("quote")) {
-                        if (spot >= input.length()) {
-                            previous = "quote";
-                            break;
-                        }
-                        look = tokenizer(input, previous, spot);
-                        spot += 1;
-                        if (look.equals("string")) {
-                            Tokens.add(look);
-                            previous = "space";
-                        }
-                    }
-                } else {
-                    look = (tokenizer(input, previous, spot));
-                    if (look == null) {
-                        System.out.println("OH NO");
+            while (input[count] == '"') {
+                count++;
+                while((input[count] >= 97 && input[count] <= 122)||
+                        ((input[count])>=65 && input[count]<=90)
+                        ||(input[count] >= 48 && input[count] <= 57)
+                        || input[count] == 32){
+                    temp.add(input[count]);
+                    count++;
+                    if(count==length){
+                        System.out.println("Trailing quote! Really!?");
                         System.exit(0);
                     }
-                    if (look.equals("quote")) {
-                        while (look.equals("quote")) {
-                            spot += 1;
-                            if (spot == input.length()) {
-                                previous = "quote";
-                                break;
-                            }
-                            look = tokenizer(input, previous, spot);
-                            if (look.equals("string")) {
-                                Tokens.add(look);
-                                previous = "space";
-                            }
-                        }
-                    } else {
-                        Tokens.add(look);
-                    }
                 }
-
-            spot = 0;
-            while(end_par>=1){
-                Tokens.add("end_parenthesis");
-                end_par-=1;
-            }
-            if(comma==1){
-                Tokens.add("comma");
-                comma=0;
-            }
-            if(end_of_line==1){
-                Tokens.add("end_stmt");
-                end_of_line=0;
+                if(input[count]=='"'){
+                    Tokens.add(new Token("string", temp.toString()));
+                    temp.removeAll(temp);
+                    break;
+                }
+                else{
+                    System.out.println("Trailing quote! Really!?");
+                    System.exit(0);
+                }
             }
         }
-        for (String thing: Tokens) {
-            System.out.println(thing);
-        }
-    }
-
-
-            }
-        }
-        return null;
-    }
-
+        return Tokens;
+}
 }
