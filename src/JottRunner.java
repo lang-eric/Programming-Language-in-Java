@@ -13,7 +13,7 @@ public class JottRunner {
             while (s.hasNextLine()) {
                 /*processing of each line happens here*/
                 String nextLine = s.nextLine();
-                if (nextLine.replace(" ", "").substring(0, 2) != "//") { //remove whitespace from string, and only send to tokenizer if it isn't a comment.
+                if (!nextLine.replace(" ", "").substring(0, 2).equals("//")) { //remove whitespace from string, and only send to tokenizer if it isn't a comment.
                     replace_this_with_what_sends_the_line_to_the_tokenizer(nextLine);
                 } else {  //print a string about receiving a comment; but really, else do nothing, because it must've been a comment, which we don't need.
                     System.out.println("+++++++++   Comment Received: " + nextLine);
