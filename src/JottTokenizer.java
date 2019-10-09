@@ -59,6 +59,19 @@ public class JottTokenizer {
         int line_number=1;
         int character_count=0;
         for (int count=0;count<length;count++) {
+            //System.out.println(line_number);
+            if(length>count+2&&character_count==0){
+                if(input[count]=='/'&&input[count+1]=='/'){
+                    while(input[count]!='\n'){
+                        count++;
+                        if(count==length+1){
+                            return Tokens;
+                        }
+                    }
+                    line_number+=1;
+                    character_count=0;
+                }
+            }
             number_type=0;
             character_count++;
             if (input[count]=='\n'){
