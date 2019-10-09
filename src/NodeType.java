@@ -1,4 +1,3 @@
-package src;
 
 enum NodeType {
     PROGRAM,

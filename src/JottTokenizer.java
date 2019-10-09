@@ -22,8 +22,6 @@
  * Author: Justin Kolodny
  */
 
-package src;
-
 import java.util.ArrayList;
 
 
