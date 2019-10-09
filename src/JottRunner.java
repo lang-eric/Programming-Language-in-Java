@@ -16,6 +16,7 @@ public class JottRunner {
             StringBuilder sb = new StringBuilder();
             while(line != null){
                 sb.append(line);
+                sb.append('\n');
                 line = buf.readLine();
             }
             String fileAsString = sb.toString();
