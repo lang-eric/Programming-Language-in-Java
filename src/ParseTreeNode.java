@@ -1,3 +1,5 @@
+package src;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,11 +9,6 @@ public class ParseTreeNode {
 	private List<ParseTreeNode> children;
 	private NodeType type;
 
-	enum NodeType {
-		PROGRAM, STMT_LIST, $$, STMT, END_STMT, EXPR, START_PAREN, END_PAREN,
-		CHAR, L_CHAR, U_CHAR, DIGIT, SIGN, ID, PRINT, ASMT, OP,
-		DBL, DBL_EXPR, INT, I_EXPR, STR_LITERAL, STR, STR_EXPR
-	}
 
 	private ParseTreeNode(ParseTreeNode parent) {
 		this.parent = parent;
