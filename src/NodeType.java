@@ -36,6 +36,7 @@ enum NodeType {
     DIV,
     POWER,
     DOT,
-    COMMA
+    COMMA,
+    $$
 
 }
