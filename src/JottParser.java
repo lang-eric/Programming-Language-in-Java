@@ -34,11 +34,11 @@ public class JottParser {
 
     public static ParseTreeNode parseTokens(List<JottTokenizer.Token> tokenList) {
         int tokIndex = 0;
-        ParseTreeNode root = new ParseTreeNode(null, ParseTreeNode.NodeType.PROGRAM);
-        root.addChild(new ParseTreeNode(root, ParseTreeNode.NodeType.STMT_LIST));
-        root.addChild(new ParseTreeNode(root, ParseTreeNode.NodeType.$$));
+        ParseTreeNode root = new ParseTreeNode(null, NodeType.PROGRAM);
+        root.addChild(new ParseTreeNode(root, NodeType.STMT_LIST));
+        root.addChild(new ParseTreeNode(root, NodeType.$$));
 
-        expandStmtList(tokenList, tokIndex, root.getChild(ParseTreeNode.NodeType.STMT_LIST));
+        expandStmtList(tokenList, tokIndex, root.getChild(NodeType.STMT_LIST));
 
         return root;
     }
@@ -51,8 +51,8 @@ public class JottParser {
     }
 
     private static void expandStmtList(List<JottTokenizer.Token> tokenList, int tokIndex, ParseTreeNode stmtList) {
-        ParseTreeNode stmt = new ParseTreeNode(stmtList, ParseTreeNode.NodeType.STMT);
-        ParseTreeNode stmtListNext = new ParseTreeNode(stmtList, ParseTreeNode.NodeType.STMT_LIST);
+        ParseTreeNode stmt = new ParseTreeNode(stmtList, NodeType.STMT);
+        ParseTreeNode stmtListNext = new ParseTreeNode(stmtList, NodeType.STMT_LIST);
         stmtList.addChild(stmt);
         stmtList.addChild(stmtListNext);
         expandStmt(tokenList, tokIndex, stmt);
@@ -66,16 +66,16 @@ public class JottParser {
 
     private static void expandStmt(List<JottTokenizer.Token> tokenList, int tokIndex, ParseTreeNode stmt) {
         if(tokenList.get(tokIndex).getType().equals("print")) {
-            ParseTreeNode prt = new ParseTreeNode(stmt, ParseTreeNode.NodeType.PRINT);
-            prt.addChild(new ParseTreeNode(prt, ParseTreeNode.NodeType.START_PAREN));
+            ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.PRINT);
+            prt.addChild(new ParseTreeNode(prt, NodeType.START_PAREN));
             tokIndex += 1;
-            ParseTreeNode expr = new ParseTreeNode(prt, ParseTreeNode.NodeType.EXPR);
+            ParseTreeNode expr = new ParseTreeNode(prt, NodeType.EXPR);
             prt.addChild(expr);
             expandExpr(tokenList, tokIndex, expr);
             if(tokenList.get(tokIndex).getType().equals("end_paren")) {
                 if(Objects.requireNonNull(lookAhead(tokenList, tokIndex)).equals("end_stmt")) {
-                    prt.addChild(new ParseTreeNode(prt, ParseTreeNode.NodeType.END_PAREN));
-                    prt.addChild(new ParseTreeNode(prt, ParseTreeNode.NodeType.END_STMT));
+                    prt.addChild(new ParseTreeNode(prt, NodeType.END_PAREN));
+                    prt.addChild(new ParseTreeNode(prt, NodeType.END_STMT));
                     tokIndex += 2;
                 } else {
                     //throw exception: expected end_stmt token (semicolon) not found
