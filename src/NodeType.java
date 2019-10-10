@@ -1,4 +1,3 @@
-package src;
 
 enum NodeType {
     PROGRAM,
@@ -36,6 +35,7 @@ enum NodeType {
     DIV,
     POWER,
     DOT,
-    COMMA
+    COMMA,
+    $$
 
 }
