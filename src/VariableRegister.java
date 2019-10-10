@@ -12,7 +12,7 @@ public class VariableRegister {
     public static void addVariable(String variable_name, Class<?> type, Object o){
         getVariableRegister().put(variable_name, new Variable(variable_name, type, o));
     }
-    public static void main(String[] args) {
+    public static void test_main(String[] args) {
         //variable name
         String var_name = "name";
         //type
