@@ -17,7 +17,6 @@ enum NodeType {
     ASMT,
     OP,
     DBL,
-    DBL_EXPR,
     D_EXPR,
     INT,
     I_EXPR,
@@ -36,6 +35,7 @@ enum NodeType {
     POWER,
     DOT,
     COMMA,
-    $$
+    $$,
+    EPSILON
 
 }
