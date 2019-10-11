@@ -239,9 +239,9 @@ public class JottTokenizer {
                 while(Character.isLowerCase(input[count] )||
                         Character.isUpperCase(input[count] )
                         ||Character.isDigit(input[count])){
-                        temp.add(input[count]);
-                        count++;
-                        character_count++;
+                    temp.add(input[count]);
+                    count++;
+                    character_count++;
                     if(count!=length){
                         if (input[count]=='\n'){
                             line_number++;
@@ -259,7 +259,7 @@ public class JottTokenizer {
                     }
                     if(!(Character.isLowerCase(input[count]))&&
                             !((Character.isUpperCase(input[count]))
-                            &&!(Character.isDigit(input[count])))){
+                                    &&!(Character.isDigit(input[count])))){
                         Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number));
                         temp.removeAll(temp);
                         count--;
@@ -271,7 +271,7 @@ public class JottTokenizer {
             if (Character.isUpperCase(input[count])) {
                 while(Character.isLowerCase(input[count])||
                         (Character.isUpperCase(input[count])
-                        ||Character.isDigit(input[count]))){
+                                ||Character.isDigit(input[count]))){
                     temp.add(input[count]);
                     count++;
                     character_count++;
@@ -348,8 +348,16 @@ public class JottTokenizer {
                     " at line "+line_number + ", character "+character_count));
             System.exit(-1);
         }
+        for(int i = 0; i< Tokens.size(); i++){
+            if(Tokens.get(i).type.equals("assign"))
+            {
+                System.out.println(Tokens.get(i+1).getType());
+                VariableRegister.addVariable(Tokens.get(i-1).getValue(), Tokens.get(i+1).type, Tokens.get(i+1).value);
+            }
+
+        }
         return Tokens;
 
-}
+    }
 
 }

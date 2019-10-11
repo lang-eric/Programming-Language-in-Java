@@ -9,20 +9,10 @@ public class VariableRegister {
     public static Variable getVariable(String variable_name){
         return variableRegister.get(variable_name);
     }
-    public static void addVariable(String variable_name, Class<?> type, Object o){
+    public static void addVariable(String variable_name, String type, String o){
         getVariableRegister().put(variable_name, new Variable(variable_name, type, o));
     }
-    public static void test_main(String[] args) {
-        //variable name
-        String var_name = "name";
-        //type
-        Class<?> type = String.class;
-        //object
-        String name = "Eric";
 
-        VariableRegister.addVariable(var_name, String.class,"Eric");
-        System.out.println(type.cast(VariableRegister.getVariable(var_name).getValue()));
-    }
 
 
 }
