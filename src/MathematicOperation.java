@@ -1,4 +1,3 @@
-package src;
 
 public class MathematicOperation {
     /**
@@ -44,7 +43,8 @@ public class MathematicOperation {
 
                 }
                 catch (Exception e){
-                    System.out.println("zero can not be divided...");
+                    System.out.println("Runtime Error: Cannot divide by zero!");
+                    System.exit(-1);
                 }
             }
 

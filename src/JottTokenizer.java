@@ -22,8 +22,6 @@
  * Author: Justin Kolodny
  */
 
-package src;
-
 import java.util.ArrayList;
 
 
@@ -31,16 +29,20 @@ import java.util.ArrayList;
 public class JottTokenizer {
     public static class Token{
         String type;
+        String value;
 
         public String getType() {
             return type;
         }
 
         public String getValue() {
-            return value;
+            StringBuilder string_value = new StringBuilder();
+            for(int count=0;count<value.length();count++){
+                    string_value.append(value.charAt(count));
+                }
+            return string_value.toString();
         }
 
-        String value;
         public Token(String type, String value){
             this.type=type;
             this.value=value;
@@ -61,6 +63,19 @@ public class JottTokenizer {
         int line_number=1;
         int character_count=0;
         for (int count=0;count<length;count++) {
+            //System.out.println(line_number);
+            if(length>count+2&&character_count==0){
+                if(input[count]=='/'&&input[count+1]=='/'){
+                    while(input[count]!='\n'){
+                        count++;
+                        if(count==length+1){
+                            return Tokens;
+                        }
+                    }
+                    line_number+=1;
+                    character_count=0;
+                }
+            }
             number_type=0;
             character_count++;
             if (input[count]=='\n'){
@@ -92,7 +107,7 @@ public class JottTokenizer {
                 continue;
             }
             else if (input[count] == ')') {
-                Tokens.add(new Token("end_paren",")"));;
+                Tokens.add(new Token("end_paren",")"));
                 continue;
             }
             else if (input[count] == '(') {
@@ -115,22 +130,22 @@ public class JottTokenizer {
                 if (input[count] == 'S' && input[count+1] == 't' && input[count+2] == 'r'
                         && input[count+3] == 'i' && input[count+4] == 'n' && input[count+5] == 'g') {
                     Tokens.add(new Token("type_String","String"));
-                    count+=6;
-                    character_count+=6;
+                    count+=5;
+                    character_count+=5;
                     continue;
                 }
                 if (input[count] == 'D' && input[count+1] == 'o' && input[count+2] == 'u'
                         && input[count+3] == 'b' && input[count+4] == 'l' && input[count+5] == 'e') {
                     Tokens.add(new Token("type_Double","Double"));
-                    count+=6;
-                    character_count+=6;
+                    count+=5;
+                    character_count+=5;
                     continue;
                 }
                 if (input[count] == 'p' && input[count + 1] == 'r' && input[count + 2] == 'i' &&
                         input[count + 3] == 'n' && input[count + 4] == 't' && input[count + 5] == '(') {
                     Tokens.add(new Token("print","print("));
-                    count+=6;
-                    character_count+=6;
+                    count+=5;
+                    character_count+=5;
                     continue;
                 }
             }
@@ -139,24 +154,24 @@ public class JottTokenizer {
                         && input[count+3] == 'e' && input[count+4] == 'g' && input[count+5] == 'e'
                         && input[count+6] == 'r') {
                     Tokens.add(new Token("type_Integer","Integer"));
-                    count+=7;
-                    character_count+=7;
+                    count+=6;
+                    character_count+=6;
                     continue;
                 }
                 if (input[count] == 'c' && input[count+1] == 'o' && input[count+2] == 'n'
                         && input[count+3] == 'c' && input[count+4] == 'a' && input[count+5] == 't'
                         && input[count+6] == '(') {
                     Tokens.add(new Token("concat","concat("));
-                    count+=7;
-                    character_count+=7;
+                    count+=6;
+                    character_count+=6;
                     continue;
                 }
                 if(input[count] == 'c' && input[count+1] == 'h' && input[count+2] == 'a'
                         && input[count+3] == 'r' && input[count+4] == 'A' && input[count+5] == 't'
                         && input[count+6] == '(') {
                     Tokens.add(new Token("charAt","charAt("));
-                    count+=7;
-                    character_count+=7;
+                    count+=6;
+                    character_count+=6;
                     continue;
                 }
             }
@@ -197,6 +212,12 @@ public class JottTokenizer {
                     }
                     else {
                         Tokens.add(new Token("integer", temp.toString()));
+                    }
+                    if (input[count] == ')') {
+                        Tokens.add(new Token("end_paren", ")"));
+                    }
+                    if(input[count] == ';') {
+                        Tokens.add(new Token("end_stmt", ";"));
                     }
                     temp.removeAll(temp);
                     break;
@@ -294,12 +315,17 @@ public class JottTokenizer {
                 if(input[count]=='"'){
                     Tokens.add(new Token("string", temp.toString()));
                     temp.removeAll(temp);
+                    end=1;
                     break;
                 }
                 else{
                     System.out.println(("Syntax error: missing '\"' at line "+line_number + ", character "+character_count));
                     System.exit(-1);
                 }
+            }
+            if(end==1){
+                end=0;
+                continue;
             }
             System.out.println(("Syntax error: Can not identitfy "+input[count]+
                     " at line "+line_number + ", character "+character_count));
