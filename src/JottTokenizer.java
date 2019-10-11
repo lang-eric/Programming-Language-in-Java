@@ -30,22 +30,35 @@ public class JottTokenizer {
     public static class Token{
         String type;
         String value;
+        int character_count;
+        int line;
 
         public String getType() {
             return type;
         }
 
         public String getValue() {
-            StringBuilder string_value = new StringBuilder();
-            for(int count=0;count<value.length();count++){
-                    string_value.append(value.charAt(count));
-                }
-            return string_value.toString();
+            return value;
         }
 
-        public Token(String type, String value){
+        public Token(String type, String value, int character_count, int line){
             this.type=type;
-            this.value=value;
+            this.character_count=character_count;
+            this.line=line;
+            int count=0;
+            if(value.charAt(0)=='[') {
+                StringBuilder builder = new StringBuilder(value.length());
+                for (Character ch : value.toCharArray()) {
+                    if (count % 3 == 1) {
+                        builder.append(ch);
+                    }
+                    count++;
+                }
+                this.value = builder.toString();
+            }
+            else{
+                this.value=value;
+            }
         }
 
     }
@@ -87,61 +100,61 @@ public class JottTokenizer {
                 continue;
             }
             if (input[count] == '+') {
-                Tokens.add(new Token("plus","+"));
+                Tokens.add(new Token("plus","+",character_count,line_number));
                 continue;
             }
             else if (input[count] == '-') {
-                Tokens.add(new Token("minus","-"));
+                Tokens.add(new Token("minus","-",character_count,line_number));
                 continue;
             }
             else if (input[count] == '*') {
-                Tokens.add(new Token("mult","*"));
+                Tokens.add(new Token("mult","*",character_count,line_number));
                 continue;
             }
             else if (input[count] == '/') {
-                Tokens.add(new Token("divide","/"));
+                Tokens.add(new Token("divide","/",character_count,line_number));
                 continue;
             }
             else if (input[count] == '^') {
-                Tokens.add(new Token("power","^"));
+                Tokens.add(new Token("power","^",character_count,line_number));
                 continue;
             }
             else if (input[count] == ')') {
-                Tokens.add(new Token("end_paren",")"));
+                Tokens.add(new Token("end_paren",")",character_count,line_number));
                 continue;
             }
             else if (input[count] == '(') {
-                Tokens.add(new Token("start_paren","("));
+                Tokens.add(new Token("start_paren","(",character_count,line_number));
                 continue;
             }
             else if (input[count] == ';') {
-                Tokens.add(new Token("end_stmt",";"));
+                Tokens.add(new Token("end_stmt",";",character_count,line_number));
                 continue;
             }
             else if (input[count] == '=') {
-                Tokens.add(new Token("assign","="));
+                Tokens.add(new Token("assign","=",character_count,line_number));
                 continue;
             }
             else if (input[count] == ',') {
-                Tokens.add(new Token("comma", ","));
+                Tokens.add(new Token("comma", ",",character_count,line_number));
                 continue;
             }
             String inputString = new String(input); //convert the char[] into a string, for readable comparison's sake.
             if(count+5<length) {
                 if (inputString.toString().substring(count, count+6).equals("String")){
-                    Tokens.add(new Token("type_String","String"));
+                    Tokens.add(new Token("type_String","String",character_count,line_number));
                     count+=5;
                     character_count+=5;
                     continue;
                 }
                 else if (inputString.toString().substring(count, count+6).equals("Double")){
-                    Tokens.add(new Token("type_Double","Double"));
+                    Tokens.add(new Token("type_Double","Double",character_count,line_number));
                     count+=5;
                     character_count+=5;
                     continue;
                 }
                 else if (inputString.substring(count, count+6).equals("print(")) {
-                    Tokens.add(new Token("print","print("));
+                    Tokens.add(new Token("print","print(",character_count,line_number));
                     count+=5;
                     character_count+=5;
                     continue;
@@ -149,19 +162,19 @@ public class JottTokenizer {
             }
             if(count+6<length) {
                 if (inputString.substring(count, count+7).equals("Integer")) {
-                    Tokens.add(new Token("type_Integer","Integer"));
+                    Tokens.add(new Token("type_Integer","Integer",character_count,line_number));
                     count+=6;
                     character_count+=6;
                     continue;
                 }
                 else if (inputString.substring(count, count+7).equals("concat(")) {
-                    Tokens.add(new Token("concat","concat("));
+                    Tokens.add(new Token("concat","concat(",character_count,line_number));
                     count+=6;
                     character_count+=6;
                     continue;
                 }
                 else if (inputString.substring(count, count+7).equals("charAt(")) {
-                    Tokens.add(new Token("charAt","charAt("));
+                    Tokens.add(new Token("charAt","charAt(",character_count,line_number));
                     count+=6;
                     character_count+=6;
                     continue;
@@ -186,14 +199,21 @@ public class JottTokenizer {
                     if (input[count]=='\n'){
                         line_number++;
                         character_count=0;
+                        if(number_type==1) {
+                            Tokens.add(new Token("double",temp.toString(),character_count,line_number));
+                        }
+                        else {
+                            Tokens.add(new Token("integer", temp.toString(),character_count,line_number));
+                        }
+                        break;
                     }
                 }
                 if(count==length) {
                     if(number_type==1) {
-                        Tokens.add(new Token("double",temp.toString()));
+                        Tokens.add(new Token("double",temp.toString(),character_count,line_number));
                     }
                     else {
-                        Tokens.add(new Token("integer", temp.toString()));
+                        Tokens.add(new Token("integer", temp.toString(),character_count,line_number));
                     }
                     temp.removeAll(temp);
                     break;
@@ -201,18 +221,13 @@ public class JottTokenizer {
                 if(!(Character.isDigit(input[count])) && !(input[count]=='.')) {
 
                     if(number_type==1) {
-                        Tokens.add(new Token("double",temp.toString()));
+                        Tokens.add(new Token("double",temp.toString(),character_count,line_number));
                     }
                     else {
-                        Tokens.add(new Token("integer", temp.toString()));
-                    }
-                    if (input[count] == ')') {
-                        Tokens.add(new Token("end_paren", ")"));
-                    }
-                    if(input[count] == ';') {
-                        Tokens.add(new Token("end_stmt", ";"));
+                        Tokens.add(new Token("integer", temp.toString(),character_count,line_number));
                     }
                     temp.removeAll(temp);
+                    count--;
                     break;
                 }
             }
@@ -231,19 +246,23 @@ public class JottTokenizer {
                         if (input[count]=='\n'){
                             line_number++;
                             character_count=0;
-                            continue;
+                            Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number));
+                            temp.removeAll(temp);
+                            break;
                         }
                     }
                     if(count==length) {
-                        Tokens.add(new Token("lower_keyword", temp.toString()));
+                        Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number));
                         temp.removeAll(temp);
+                        count--;
                         break;
                     }
                     if(!(Character.isLowerCase(input[count]))&&
                             !((Character.isUpperCase(input[count]))
                             &&!(Character.isDigit(input[count])))){
-                        Tokens.add(new Token("lower_keyword", temp.toString()));
+                        Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number));
                         temp.removeAll(temp);
+                        count--;
                         break;
                     }
                 }
@@ -260,18 +279,23 @@ public class JottTokenizer {
                         if (input[count]=='\n'){
                             line_number++;
                             character_count=0;
+                            Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number));
+                            temp.removeAll(temp);
+                            break;
                         }
                     }
                     if(count==length) {
-                        Tokens.add(new Token("upper_keyword", temp.toString()));
+                        Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number));
                         temp.removeAll(temp);
+                        count--;
                         break;
                     }
                     if(!(Character.isLowerCase(input[count])&&
                             !(Character.isUpperCase(input[count]))
                             &&!(Character.isDigit(input[count])))){
-                        Tokens.add(new Token("upper_keyword", temp.toString()));
+                        Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number));
                         temp.removeAll(temp);
+                        count--;
                         break;
                     }
                 }
@@ -306,7 +330,7 @@ public class JottTokenizer {
                     }
                 }
                 if(input[count]=='"'){
-                    Tokens.add(new Token("string", temp.toString()));
+                    Tokens.add(new Token("string", temp.toString(),character_count,line_number));
                     temp.removeAll(temp);
                     end=1;
                     break;
@@ -326,6 +350,6 @@ public class JottTokenizer {
         }
         return Tokens;
 
-}//Hello
+}
 
 }
