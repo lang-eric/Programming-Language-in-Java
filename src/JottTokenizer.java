@@ -207,7 +207,6 @@ public class JottTokenizer {
                     break;
                 }
                 if(!(input[count] >= 48 && input[count] <= 57)&&!(input[count]==46)) {
-
                     if(number_type==1) {
                         Tokens.add(new Token("double",temp.toString()));
                     }
@@ -216,6 +215,9 @@ public class JottTokenizer {
                     }
                     if (input[count] == ')') {
                         Tokens.add(new Token("end_paren", ")"));
+                    }
+                    if(input[count] == ';') {
+                        Tokens.add(new Token("end_stmt", ";"));
                     }
                     temp.removeAll(temp);
                     break;
