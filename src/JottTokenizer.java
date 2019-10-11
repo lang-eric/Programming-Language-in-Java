@@ -209,6 +209,9 @@ public class JottTokenizer {
                     if (input[count] == ')') {
                         Tokens.add(new Token("end_paren", ")"));
                     }
+                    if(input[count] == ';') {
+                        Tokens.add(new Token("end_stmt", ";"));
+                    }
                     temp.removeAll(temp);
                     break;
                 }
@@ -324,5 +327,5 @@ public class JottTokenizer {
         return Tokens;
 
 }//Hello
-    
+
 }
