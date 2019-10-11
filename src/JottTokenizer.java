@@ -122,27 +122,25 @@ public class JottTokenizer {
                 Tokens.add(new Token("assign","="));
                 continue;
             }
-            else if (input[count] == ','){
-                Tokens.add(new Token("comma",","));
+            else if (input[count] == ',') {
+                Tokens.add(new Token("comma", ","));
                 continue;
             }
+            String inputString = new String(input); //convert the char[] into a string, for readable comparison's sake.
             if(count+5<length) {
-                if (input[count] == 'S' && input[count+1] == 't' && input[count+2] == 'r'
-                        && input[count+3] == 'i' && input[count+4] == 'n' && input[count+5] == 'g') {
+                if (inputString.toString().substring(count, count+6).equals("String")){
                     Tokens.add(new Token("type_String","String"));
                     count+=5;
                     character_count+=5;
                     continue;
                 }
-                if (input[count] == 'D' && input[count+1] == 'o' && input[count+2] == 'u'
-                        && input[count+3] == 'b' && input[count+4] == 'l' && input[count+5] == 'e') {
+                else if (inputString.toString().substring(count, count+6).equals("Double")){
                     Tokens.add(new Token("type_Double","Double"));
                     count+=5;
                     character_count+=5;
                     continue;
                 }
-                if (input[count] == 'p' && input[count + 1] == 'r' && input[count + 2] == 'i' &&
-                        input[count + 3] == 'n' && input[count + 4] == 't' && input[count + 5] == '(') {
+                else if (inputString.substring(count, count+6).equals("print(")) {
                     Tokens.add(new Token("print","print("));
                     count+=5;
                     character_count+=5;
@@ -150,25 +148,19 @@ public class JottTokenizer {
                 }
             }
             if(count+6<length) {
-                if (input[count] == 'I' && input[count+1] == 'n' && input[count+2] == 't'
-                        && input[count+3] == 'e' && input[count+4] == 'g' && input[count+5] == 'e'
-                        && input[count+6] == 'r') {
+                if (inputString.substring(count, count+7).equals("Integer")) {
                     Tokens.add(new Token("type_Integer","Integer"));
                     count+=6;
                     character_count+=6;
                     continue;
                 }
-                if (input[count] == 'c' && input[count+1] == 'o' && input[count+2] == 'n'
-                        && input[count+3] == 'c' && input[count+4] == 'a' && input[count+5] == 't'
-                        && input[count+6] == '(') {
+                else if (inputString.substring(count, count+7).equals("concat(")) {
                     Tokens.add(new Token("concat","concat("));
                     count+=6;
                     character_count+=6;
                     continue;
                 }
-                if(input[count] == 'c' && input[count+1] == 'h' && input[count+2] == 'a'
-                        && input[count+3] == 'r' && input[count+4] == 'A' && input[count+5] == 't'
-                        && input[count+6] == '(') {
+                else if (inputString.substring(count, count+7).equals("charAt(")) {
                     Tokens.add(new Token("charAt","charAt("));
                     count+=6;
                     character_count+=6;
@@ -176,9 +168,9 @@ public class JottTokenizer {
                 }
             }
 
-            while(input[count] >= 48 && input[count] <= 57||input[count]==46) {
+            while(Character.isDigit(input[count]) || input[count]=='.') {
                 end=1;
-                if(input[count]==46) {
+                if(input[count]=='.') {
                     if(number_type==1) {
                         System.out.println(("Syntax error: two '.'s in a row " +
                                 "does not make a number at "+line_number + ", character "+character_count));
@@ -206,7 +198,7 @@ public class JottTokenizer {
                     temp.removeAll(temp);
                     break;
                 }
-                if(!(input[count] >= 48 && input[count] <= 57)&&!(input[count]==46)) {
+                if(!(Character.isDigit(input[count])) && !(input[count]=='.')) {
 
                     if(number_type==1) {
                         Tokens.add(new Token("double",temp.toString()));
@@ -225,10 +217,10 @@ public class JottTokenizer {
                 end=0;
                 continue;
             }
-            if (input[count] >= 97 && input[count] <= 122) {
-                while((input[count] >= 97 && input[count] <= 122)||
-                        ((input[count])>=65 && input[count]<=90)
-                        ||(input[count] >= 48 && input[count] <= 57)){
+            if (Character.isLowerCase(input[count] )) {
+                while(Character.isLowerCase(input[count] )||
+                        Character.isUpperCase(input[count] )
+                        ||Character.isDigit(input[count])){
                         temp.add(input[count]);
                         count++;
                         character_count++;
@@ -244,9 +236,9 @@ public class JottTokenizer {
                         temp.removeAll(temp);
                         break;
                     }
-                    if(!(input[count] >= 97 && input[count] <= 122)&&
-                            !((input[count])>=65 && input[count]<=90)
-                            &&!(input[count] >= 48 && input[count] <= 57)) {
+                    if(!(Character.isLowerCase(input[count]))&&
+                            !((Character.isUpperCase(input[count]))
+                            &&!(Character.isDigit(input[count])))){
                         Tokens.add(new Token("lower_keyword", temp.toString()));
                         temp.removeAll(temp);
                         break;
@@ -254,10 +246,10 @@ public class JottTokenizer {
                 }
                 continue;
             }
-            if (input[count] >= 65 && input[count] <= 90) {
-                while((input[count] >= 97 && input[count] <= 122)||
-                        ((input[count])>=65 && input[count]<=90)
-                        ||(input[count] >= 48 && input[count] <= 57)){
+            if (Character.isUpperCase(input[count])) {
+                while(Character.isLowerCase(input[count])||
+                        (Character.isUpperCase(input[count])
+                        ||Character.isDigit(input[count]))){
                     temp.add(input[count]);
                     count++;
                     character_count++;
@@ -272,9 +264,9 @@ public class JottTokenizer {
                         temp.removeAll(temp);
                         break;
                     }
-                    if(!(input[count] >= 97 && input[count] <= 122)&&
-                            !((input[count])>=65 && input[count]<=90)
-                            &&!(input[count] >= 48 && input[count] <= 57)) {
+                    if(!(Character.isLowerCase(input[count])&&
+                            !(Character.isUpperCase(input[count]))
+                            &&!(Character.isDigit(input[count])))){
                         Tokens.add(new Token("upper_keyword", temp.toString()));
                         temp.removeAll(temp);
                         break;
@@ -292,10 +284,10 @@ public class JottTokenizer {
                         character_count=0;
                     }
                 }
-                while((input[count] >= 97 && input[count] <= 122)||
-                        ((input[count])>=65 && input[count]<=90)
-                        ||(input[count] >= 48 && input[count] <= 57)
-                        || input[count] == 32){
+                while(Character.isLowerCase(input[count])||
+                        (Character.isUpperCase(input[count]))
+                        ||Character.isDigit(input[count])
+                        || input[count] == ' '){
                     temp.add(input[count]);
                     count++;
                     character_count++;
@@ -330,5 +322,7 @@ public class JottTokenizer {
             System.exit(-1);
         }
         return Tokens;
+
 }//Hello
+    
 }

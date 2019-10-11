@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class JottRunner {
@@ -21,10 +22,10 @@ public class JottRunner {
             }
             String fileAsString = sb.toString();
             ArrayList<JottTokenizer.Token> TokenList=new ArrayList<>();
-            TokenList= JottTokenizer.JottTokenizer(fileAsString);
-            for (JottTokenizer.Token token: TokenList) {
+            //TokenList= JottTokenizer.JottTokenizer(fileAsString);
+          /*  for (JottTokenizer.Token token: TokenList) {
                 System.out.println("Token Type: "+token.getType()+" Token Value: "+token.getValue());
-            }
+            }*/
 //            while (s.hasNextLine()) {
 //                /*processing of each line happens here*/
 //                String nextLine = s.nextLine();
@@ -34,6 +35,12 @@ public class JottRunner {
 //                    System.out.println("+++++++++   Comment Received: " + nextLine);
 //                }
 //            }
+            String str = "print(hi)";
+            List<JottTokenizer.Token> tokens = JottTokenizer.JottTokenizer(str);
+
+            for(int i = 0; i< tokens.size(); i++){
+                System.out.println(tokens.get(i).type + "       " + tokens.get(i).value);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.out.println("Error, invalid file.");
