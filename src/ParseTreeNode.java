@@ -7,11 +7,22 @@ public class ParseTreeNode {
 	private String token;
 	private List<ParseTreeNode> children;
 	private NodeType type;
+	private String value;
 
 
 	private ParseTreeNode(ParseTreeNode parent) {
 		this.parent = parent;
 		this.children = new ArrayList<ParseTreeNode>();
+	}
+
+	/**
+	 * Leave node constructor
+	 * @param parent
+	 * @param value
+	 */
+	public ParseTreeNode(ParseTreeNode parent, String value){
+		this.parent = parent;
+		this.value = value;
 	}
 
 	public ParseTreeNode(ParseTreeNode parent, NodeType type) {
