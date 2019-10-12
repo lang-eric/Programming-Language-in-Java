@@ -4,7 +4,6 @@ import java.util.List;
 
 public class JottEvaluation {
 
-    private static MathematicOperation mathematicOperation = new MathematicOperation();
     private static List<String> outputs = new ArrayList<>();
     private static HashMap<String, Variable> map = new HashMap<>();
 
@@ -61,8 +60,8 @@ public class JottEvaluation {
             if (obj1 instanceof Integer) {
                 try {
                     ans_double = (int) obj1 / (int) obj2;
-                    //ans = (int) Math.round(ans_double);
-                    return String.valueOf(ans_double);
+                    ans = (int) Math.round(ans_double);
+                    return String.valueOf(ans);
 
                 } catch (Exception e) {
                     System.out.println("Runtime Error: Cannot divide by zero!");
