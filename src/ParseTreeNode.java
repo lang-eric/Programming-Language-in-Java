@@ -17,7 +17,7 @@ public class ParseTreeNode {
 //	}
 
 	/**
-	 * Leave node constructor
+	 * Leaf node constructor
 	 * @param parent
 	 * @param value
 	 */

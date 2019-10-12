@@ -84,21 +84,21 @@ public class JottParser {
         }
 
         else if (type.equals("type_Double")) {
-            ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.ASMT);
-            expandASMT(tokenList, prt, NodeType.DOUBLE);
-            stmt.addChild(prt);
+            ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
+            expandASMT(tokenList, asmt, NodeType.DOUBLE);
+            stmt.addChild(asmt);
         }
 
         else if (type.equals("type_Integer")) {
-            ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.ASMT);
-            expandASMT(tokenList, prt, NodeType.INTEGER);
-            stmt.addChild(prt);
+            ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
+            expandASMT(tokenList, asmt, NodeType.INTEGER);
+            stmt.addChild(asmt);
         }
 
         else if (type.equals("type_String")) {
-            ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.ASMT);
-            expandASMT(tokenList, prt, NodeType.STR);
-            stmt.addChild(prt);
+            ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
+            expandASMT(tokenList, asmt, NodeType.STR);
+            stmt.addChild(asmt);
         }
 
         else {
@@ -173,6 +173,34 @@ public class JottParser {
 
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex ++;
+        }
+
+        else if (type.equals(NodeType.STR)) {
+            ParseTreeNode str = new ParseTreeNode(parent, NodeType.STRING, "String");
+            parent.addChild(str);
+            tokIndex += 1;
+            ParseTreeNode id = new ParseTreeNode(parent, NodeType.ID);
+            expandId(tokenList, id);
+            cur_type = NodeType.STR;
+            cur_varName = id.getValue();
+            map.put(cur_varName, cur_type);
+            parent.addChild(id);
+            tokIndex += 1;
+
+            if(!tokenList.get(tokIndex).getType().equals("assign")) {
+                System.out.println("Error: assignment expected, " + tokenList.get(tokIndex).getValue() + " found.");
+                return;
+            }
+            ParseTreeNode assignment = new ParseTreeNode(parent, NodeType.OP, "=");
+            parent.addChild(assignment);
+            tokIndex += 1;
+
+            ParseTreeNode s_expr = new ParseTreeNode(parent, NodeType.S_EXPR);
+            expandSExpr(tokenList, s_expr);
+            parent.addChild(s_expr);
+
+            parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
+            tokIndex += 1;
         }
     }
 
@@ -266,22 +294,6 @@ public class JottParser {
             //TODO: ERROR
         }
     }
-
-    private static void expandSExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr){
-        String type = tokenList.get(tokIndex).getType();
-        List<ParseTreeNode> children = dexpr.getAllChildren();
-
-        if (type.equals("string")) {
-            ParseTreeNode ptr = new ParseTreeNode(dexpr, NodeType.STR_LITERAL);
-
-        }
-
-
-    }
-
-
-
-
 
 
     private static void expandIExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr) {
@@ -430,7 +442,7 @@ public class JottParser {
                 tokIndex += 1;
                 break;
             case "concat":
-                ParseTreeNode cat = new ParseTreeNode(s_expr, "concat");
+                ParseTreeNode cat = new ParseTreeNode(s_expr, NodeType.CONCAT,"concat");
                 s_expr.addChild(cat);
                 addStartParen(s_expr);
                 tokIndex += 1;
@@ -441,7 +453,7 @@ public class JottParser {
                     //TODO: generate error: comma expected
                     break;
                 }
-                s_expr.addChild(new ParseTreeNode(s_expr, ","));
+                s_expr.addChild(new ParseTreeNode(s_expr, NodeType.COMMA, ","));
                 tokIndex += 1;
                 ParseTreeNode s2 = new ParseTreeNode(s_expr, NodeType.S_EXPR);
                 expandSExpr(tokenList, s2);
@@ -450,7 +462,7 @@ public class JottParser {
                 tokIndex += 1;
                 break;
             case "charAt":
-                ParseTreeNode charAt = new ParseTreeNode(s_expr, "charAt");
+                ParseTreeNode charAt = new ParseTreeNode(s_expr, NodeType.CHARAT, "charAt");
                 s_expr.addChild(charAt);
                 addStartParen(s_expr);
                 tokIndex += 1;
@@ -461,7 +473,7 @@ public class JottParser {
                     //TODO: generate error: comma expected
                     break;
                 }
-                s_expr.addChild(new ParseTreeNode(s_expr, ","));
+                s_expr.addChild(new ParseTreeNode(s_expr, NodeType.COMMA, ","));
                 tokIndex += 1;
                 ParseTreeNode i_expr = new ParseTreeNode(s_expr, NodeType.I_EXPR);
                 expandIExpr(tokenList, i_expr);
@@ -478,7 +490,7 @@ public class JottParser {
      */
     private static void addStartParen(ParseTreeNode parent) {
         ParseTreeNode start_paren = new ParseTreeNode(parent, NodeType.START_PAREN);
-        start_paren.addChild(new ParseTreeNode(start_paren, "("));
+        start_paren.addChild(new ParseTreeNode(start_paren, NodeType.START_PAREN, "("));
         parent.addChild(start_paren);
     }
 
@@ -488,20 +500,16 @@ public class JottParser {
      */
     private static void addEndParen(ParseTreeNode parent) {
         ParseTreeNode end_paren = new ParseTreeNode(parent, NodeType.END_PAREN);
-        end_paren.addChild(new ParseTreeNode(end_paren, ")"));
+        end_paren.addChild(new ParseTreeNode(end_paren, NodeType.END_PAREN, ")"));
         parent.addChild(end_paren);
     }
 
     private static void expandStrLiteral(List<JottTokenizer.Token> tokenList, ParseTreeNode str_literal) {
-        str_literal.addChild(new ParseTreeNode(str_literal, "\""));
+        str_literal.addChild(new ParseTreeNode(str_literal, NodeType.QUOTE,"\""));
         ParseTreeNode str = new ParseTreeNode(str_literal, NodeType.STR);
         str_literal.addChild(str);
-        str.addChild(new ParseTreeNode(str, tokenList.get(tokIndex).getValue()));
-        str_literal.addChild(new ParseTreeNode(str_literal, "\""));
-    }
-
-    private static void expandIExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr) {
-
+        str.addChild(new ParseTreeNode(str, NodeType.STR, tokenList.get(tokIndex).getValue()));
+        str_literal.addChild(new ParseTreeNode(str_literal, NodeType.QUOTE, "\""));
     }
 
     private static void expandDExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr){
@@ -616,16 +624,6 @@ public class JottParser {
                 dexpr.addChild(op);
             }
 
-            // TODO: check for error behind the sign
-            tokIndex ++;
-            expandDExpr(tokenList, dexpr);
-        }
-
-        else if (type.equals("power")) {
-            ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP);
-            ParseTreeNode leave = new ParseTreeNode(op, "^");
-            op.addChild(leave);
-            dexpr.addChild(op);
             // TODO: check for error behind the sign
             tokIndex ++;
             expandDExpr(tokenList, dexpr);

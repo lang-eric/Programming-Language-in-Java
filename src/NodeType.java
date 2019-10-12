@@ -22,6 +22,7 @@ enum NodeType {
         I_EXPR,
         S_EXPR,
         STR_LITERAL,
+        QUOTE,
         STR,
         DOUBLE,
         CONCAT,
@@ -37,7 +38,7 @@ enum NodeType {
         COMMA,
         $$,
         EPSILON,
-        INTEGER
-
+        INTEGER,
+        STRING
 
 }
