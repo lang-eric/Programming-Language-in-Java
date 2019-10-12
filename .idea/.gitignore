@@ -2,3 +2,9 @@
 /workspace.xml
 # Default ignored files
 /workspace.xml
+/misc.xml
+/modules.xml
+vcs.xml
+workspace.xml
+PLC_Project.iml
+misc.xml
