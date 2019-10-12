@@ -1,7 +1,5 @@
 
-import javax.xml.soap.Node;
 import java.util.List;
-import java.util.Objects;
 
 public class JottParser {
     private static int tokIndex;
@@ -142,16 +140,114 @@ public class JottParser {
 
     private static void expandExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode expr) {
         //TODO: implement <i_expr> case
-
+        if (tokenList.get(tokIndex).getType().equals("integer")) {
+            ParseTreeNode i_expr = new ParseTreeNode(expr, NodeType.INT);
+            expandIExpr(tokenList, i_expr);
+        }
         //TODO: implement <d_expr> case
-        if (tokenList.get(tokIndex).getType().equals("type_Double")) {
+        else if (tokenList.get(tokIndex).getType().equals("type_Double")) {
             ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.D_EXPR);
             expandDExpr(tokenList, ptr);
         }
 
         //TODO: implement <s_expr> case
-
+        else if (tokenList.get(tokIndex).getType().equals("string") || tokenList.get(tokIndex).getType().equals("concat")
+                || tokenList.get(tokIndex).getType().equals("charAt")) {
+            ParseTreeNode s_expr = new ParseTreeNode(expr, NodeType.S_EXPR);
+            expandSExpr(tokenList, s_expr);
+            expr.addChild(s_expr);
+        }
         //TODO: implement <id> case
+    }
+
+    private static void expandSExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode s_expr) {
+        String sExprType = tokenList.get(tokIndex).getType();
+        switch (sExprType) {
+            case "string":
+                ParseTreeNode str_literal = new ParseTreeNode(s_expr, NodeType.STR_LITERAL);
+                expandStrLiteral(tokenList, str_literal);
+                s_expr.addChild(str_literal);
+                tokIndex += 1;
+                break;
+            case "lower_keyword":
+                ParseTreeNode s_id = new ParseTreeNode(s_expr, NodeType.ID);
+                expandId(tokenList, s_id);
+                s_expr.addChild(s_id);
+                tokIndex += 1;
+                break;
+            case "concat":
+                ParseTreeNode cat = new ParseTreeNode(s_expr, "concat");
+                s_expr.addChild(cat);
+                addStartParen(s_expr);
+                tokIndex += 1;
+                ParseTreeNode s1 = new ParseTreeNode(s_expr, NodeType.S_EXPR);
+                expandSExpr(tokenList, s1);
+                s_expr.addChild(s1);
+                if (!tokenList.get(tokIndex).getType().equals("comma")) {
+                    //TODO: generate error: comma expected
+                    break;
+                }
+                s_expr.addChild(new ParseTreeNode(s_expr, ","));
+                tokIndex += 1;
+                ParseTreeNode s2 = new ParseTreeNode(s_expr, NodeType.S_EXPR);
+                expandSExpr(tokenList, s2);
+                s_expr.addChild(s2);
+                addEndParen(s_expr);
+                tokIndex += 1;
+                break;
+            case "charAt":
+                ParseTreeNode charAt = new ParseTreeNode(s_expr, "charAt");
+                s_expr.addChild(charAt);
+                addStartParen(s_expr);
+                tokIndex += 1;
+                ParseTreeNode targetS = new ParseTreeNode(s_expr, NodeType.S_EXPR);
+                expandSExpr(tokenList, targetS);
+                s_expr.addChild(targetS);
+                if (!tokenList.get(tokIndex).getType().equals("comma")) {
+                    //TODO: generate error: comma expected
+                    break;
+                }
+                s_expr.addChild(new ParseTreeNode(s_expr, ","));
+                tokIndex += 1;
+                ParseTreeNode i_expr = new ParseTreeNode(s_expr, NodeType.I_EXPR);
+                expandIExpr(tokenList, i_expr);
+                s_expr.addChild(i_expr);
+                addEndParen(s_expr);
+                tokIndex += 1;
+                break;
+        }
+    }
+
+    /**
+     * Adds in a start_paren node into the parent's children.
+     * @param parent a start_paren node will be added to this node's children list
+     */
+    private static void addStartParen(ParseTreeNode parent) {
+        ParseTreeNode start_paren = new ParseTreeNode(parent, NodeType.START_PAREN);
+        start_paren.addChild(new ParseTreeNode(start_paren, "("));
+        parent.addChild(start_paren);
+    }
+
+    /**
+     * Adds in an end_paren node into the parent's children.
+     * @param parent an end_paren node will be added to this node's children list
+     */
+    private static void addEndParen(ParseTreeNode parent) {
+        ParseTreeNode end_paren = new ParseTreeNode(parent, NodeType.END_PAREN);
+        end_paren.addChild(new ParseTreeNode(end_paren, ")"));
+        parent.addChild(end_paren);
+    }
+
+    private static void expandStrLiteral(List<JottTokenizer.Token> tokenList, ParseTreeNode str_literal) {
+        str_literal.addChild(new ParseTreeNode(str_literal, "\""));
+        ParseTreeNode str = new ParseTreeNode(str_literal, NodeType.STR);
+        str_literal.addChild(str);
+        str.addChild(new ParseTreeNode(str, tokenList.get(tokIndex).getValue()));
+        str_literal.addChild(new ParseTreeNode(str_literal, "\""));
+    }
+
+    private static void expandIExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr) {
+
     }
 
     private static void expandDExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr){
