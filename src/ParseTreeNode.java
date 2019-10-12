@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParseTreeNode {
+
 	private ParseTreeNode parent;
 	private String token;
 	private List<ParseTreeNode> children;
@@ -10,10 +11,10 @@ public class ParseTreeNode {
 	private String value;
 
 
-	private ParseTreeNode(ParseTreeNode parent) {
-		this.parent = parent;
-		this.children = new ArrayList<ParseTreeNode>();
-	}
+//	private ParseTreeNode(ParseTreeNode parent, NodeType program) {
+//		this.parent = parent;
+//		this.children = new ArrayList<ParseTreeNode>();
+//	}
 
 	/**
 	 * Leave node constructor
@@ -28,8 +29,9 @@ public class ParseTreeNode {
 	}
 
 	public ParseTreeNode(ParseTreeNode parent, NodeType type) {
-		this(parent);
+		this.parent = parent;
 		this.type = type;
+		this.children = new ArrayList<>();
 	}
 
 	/**

@@ -1,10 +1,10 @@
-
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 public class JottParser {
-    private static int tokIndex;
+
+
+    private static int tokIndex = 0;
     private static String cur_varName = "";
     private static NodeType cur_type = null;
     private static HashMap<String, NodeType> map = new HashMap<>();

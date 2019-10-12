@@ -4,13 +4,9 @@ import java.util.List;
 
 public class JottEvaluation {
 
-    private static VariableRegister variableRegister = new VariableRegister();
     private static MathematicOperation mathematicOperation = new MathematicOperation();
     private static List<String> outputs = new ArrayList<>();
     private static HashMap<String, Variable> map = new HashMap<>();
-    public static VariableRegister getVariableRegister(){
-        return variableRegister;
-    }
 
     private static String varName = "";
 
@@ -21,6 +17,68 @@ public class JottEvaluation {
         stmtListEval(tree.getAllChildren().get(0));
 
         return outputs;
+    }
+
+    public static String arithmeticOp(Object obj1, Object obj2, String op) {
+        int ans = 0;
+        double ans_double = 0;
+
+        if (op.equals("+")) {
+            if (obj1 instanceof Integer) {
+                ans = (int) obj1 + (int) obj2;
+                return String.valueOf(ans);
+            } else {
+                ans_double = (double) obj1 + (double) obj2;
+                return String.valueOf(ans_double);
+            }
+        } else if (op.equals("-")) {
+            if (obj1 instanceof Integer) {
+                ans = (int) obj1 - (int) obj2;
+                return String.valueOf(ans);
+            } else {
+                ans_double = (double) obj1 - (double) obj2;
+                return String.valueOf(ans_double);
+            }
+        } else if (op.equals("*")) {
+            if (obj1 instanceof Integer) {
+                ans = (int) obj1 * (int) obj2;
+                return String.valueOf(ans);
+            } else {
+                ans_double = (double) obj1 * (double) obj2;
+                return String.valueOf(ans_double);
+            }
+        } else if (op.equals("^")) {
+            if (obj1 instanceof Integer) {
+                ans_double = Math.pow((int) obj1, (int) obj2);
+                ans = (int) Math.round(ans_double);
+                return String.valueOf(ans);
+            } else {
+                ans_double = Math.pow((double) obj1, (double) obj2);
+            }
+            return String.valueOf(ans_double);
+        } else {
+
+            if (obj1 instanceof Integer) {
+                try {
+                    ans_double = (int) obj1 / (int) obj2;
+                    ans = (int) Math.round(ans_double);
+                    return String.valueOf(ans);
+
+                } catch (Exception e) {
+                    System.out.println("Runtime Error: Cannot divide by zero!");
+                    System.exit(-1);
+                }
+                return String.valueOf(ans_double);
+            } else {
+                try {
+                    ans_double = (double) obj1 / (double) obj2;
+
+                } catch (Exception e) {
+                    System.out.println("zero can not be divided...");
+                }
+                return String.valueOf(ans_double);
+            }
+        }
     }
 
     public static void stmtEval(ParseTreeNode tree){
@@ -98,7 +156,7 @@ public class JottEvaluation {
 
                 int d1 = Integer.parseInt(left);
                 int d2 = Integer.parseInt(right);
-                ans = mathematicOperation.arithmeticOp(d1, d2, op);
+                ans = arithmeticOp(d1, d2, op);
                 map.put(varName, new Variable(varName, "int", ans));
             }
             //TODO:ERROR
@@ -166,7 +224,7 @@ public class JottEvaluation {
 
                 Double d1 = Double.parseDouble(left);
                 Double d2 = Double.parseDouble(right);
-                ans = mathematicOperation.arithmeticOp(d1, d2, op);
+                ans = arithmeticOp(d1, d2, op);
                 map.put(varName, new Variable(varName, "double", ans));
             }
             //TODO:ERROR
