@@ -109,7 +109,7 @@ public class JottParser {
             tokIndex++;
 
             if (tokIndex != tokenList.size() - 1) {
-                //TODO: error handling
+                //TODO: error
             }
 
             stmt.addChild(new ParseTreeNode(stmt, NodeType.END_STMT));

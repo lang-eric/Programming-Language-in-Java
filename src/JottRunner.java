@@ -30,6 +30,7 @@ public class JottRunner {
             for (String s : out) {
                 output.println(s);
             }
+            output.close();
 
 
         } catch (FileNotFoundException e) {

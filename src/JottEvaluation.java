@@ -50,8 +50,8 @@ public class JottEvaluation {
         } else if (op.equals("^")) {
             if (obj1 instanceof Integer) {
                 ans_double = Math.pow((int) obj1, (int) obj2);
-                ans = (int) Math.round(ans_double);
-                return String.valueOf(ans);
+                //ans = (int) Math.round(ans_double);
+                return String.valueOf(ans_double);
             } else {
                 ans_double = Math.pow((double) obj1, (double) obj2);
             }
@@ -61,8 +61,8 @@ public class JottEvaluation {
             if (obj1 instanceof Integer) {
                 try {
                     ans_double = (int) obj1 / (int) obj2;
-                    ans = (int) Math.round(ans_double);
-                    return String.valueOf(ans);
+                    //ans = (int) Math.round(ans_double);
+                    return String.valueOf(ans_double);
 
                 } catch (Exception e) {
                     System.out.println("Runtime Error: Cannot divide by zero!");
