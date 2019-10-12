@@ -1,8 +1,13 @@
-
+import java.util.HashMap;
 import java.util.List;
 
 public class JottParser {
-    private static int tokIndex;
+
+
+    private static int tokIndex = 0;
+    private static String cur_varName = "";
+    private static NodeType cur_type = null;
+    private static HashMap<String, NodeType> map = new HashMap<>();
 
     /* Values and their corresponding types as indicated in JottTokenizer.
      * '+' - plus
@@ -35,6 +40,8 @@ public class JottParser {
         this.tokIndex = 0;
     }
 
+
+
     public static ParseTreeNode parseTokens(List<JottTokenizer.Token> tokenList) {
         ParseTreeNode root = new ParseTreeNode(null, NodeType.PROGRAM);
         ParseTreeNode stmtList = new ParseTreeNode(root, NodeType.STMT_LIST);
@@ -55,9 +62,7 @@ public class JottParser {
     }
 
     private static void expandStmtList(List<JottTokenizer.Token> tokenList, ParseTreeNode stmtList) {
-
-
-            if (tokIndex == tokenList.size()) {
+            if (tokIndex >= tokenList.size()) {
                 stmtList.addChild(new ParseTreeNode(stmtList, NodeType.EPSILON));
             }
             else {
@@ -68,14 +73,13 @@ public class JottParser {
                 stmtList.addChild(stmt);
                 stmtList.addChild(stmtListNext);
             }
-
-
     }
 
     private static void expandStmt(List<JottTokenizer.Token> tokenList, ParseTreeNode stmt) {
         String type = tokenList.get(tokIndex).getType();
         if (type.equals("print")) {
             ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.PRINT);
+            expandPrint(tokenList, prt);
             stmt.addChild(prt);
         }
 
@@ -87,11 +91,13 @@ public class JottParser {
 
         else if (type.equals("type_Integer")) {
             ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.ASMT);
+            expandASMT(tokenList, prt, NodeType.INTEGER);
             stmt.addChild(prt);
         }
 
         else if (type.equals("type_String")) {
             ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.ASMT);
+            expandASMT(tokenList, prt, NodeType.STR);
             stmt.addChild(prt);
         }
 
@@ -117,6 +123,9 @@ public class JottParser {
             tokIndex++;
             ParseTreeNode id = new ParseTreeNode(parent, NodeType.ID);
             expandId(tokenList, id);
+            cur_type = NodeType.DOUBLE;
+            cur_varName = id.getValue();
+            map.put(cur_varName, cur_type);
             parent.addChild(id);
 
             tokIndex++;
@@ -125,7 +134,7 @@ public class JottParser {
                 return;
             }
 
-            ParseTreeNode child2 = new ParseTreeNode(parent, "=");
+            ParseTreeNode child2 = new ParseTreeNode(parent, NodeType.OP, "=");
             parent.addChild(child2);
 
             tokIndex++;
@@ -136,18 +145,50 @@ public class JottParser {
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex ++;
         }
+
+        else if (type.equals(NodeType.INTEGER)) {
+            ParseTreeNode child = new ParseTreeNode(parent, NodeType.INTEGER);
+            parent.addChild(child);
+            tokIndex++;
+            ParseTreeNode id = new ParseTreeNode(parent, NodeType.ID);
+            expandId(tokenList, id);
+            cur_type = NodeType.INTEGER;
+            cur_varName = id.getValue();
+            map.put(cur_varName, cur_type);
+            parent.addChild(id);
+
+            tokIndex++;
+            if (!tokenList.get(tokIndex).getType().equals("assign")) {
+                System.out.println("Missing assignment Error");
+                return;
+            }
+
+            ParseTreeNode child2 = new ParseTreeNode(parent, NodeType.OP, "=");
+            parent.addChild(child2);
+
+            tokIndex++;
+            ParseTreeNode child3 = new ParseTreeNode(parent, NodeType.I_EXPR);
+            expandIExpr(tokenList, child3);
+            parent.addChild(child3);
+
+            parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
+            tokIndex ++;
+        }
     }
 
     private static void expandExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode expr) {
         //TODO: implement <i_expr> case
-        if (tokenList.get(tokIndex).getType().equals("integer")) {
-            ParseTreeNode i_expr = new ParseTreeNode(expr, NodeType.INT);
-            expandIExpr(tokenList, i_expr);
+        if (tokenList.get(tokIndex).getType().equals("integer")){
+            ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.I_EXPR);
+            expandIExpr(tokenList, ptr);
+            expr.addChild(ptr);
         }
+
         //TODO: implement <d_expr> case
-        else if (tokenList.get(tokIndex).getType().equals("type_Double")) {
+        else if (tokenList.get(tokIndex).getType().equals("double")) {
             ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.D_EXPR);
             expandDExpr(tokenList, ptr);
+            expr.addChild(ptr);
         }
 
         //TODO: implement <s_expr> case
@@ -158,6 +199,219 @@ public class JottParser {
             expr.addChild(s_expr);
         }
         //TODO: implement <id> case
+        else if (tokenList.get(tokIndex).getType().equals("lower_keyword")) {
+            ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.ID);
+
+            if (tokenList.get(tokIndex + 1).getType().equals("plus") || tokenList.get(tokIndex + 1).getType().equals("mult") ||
+                    tokenList.get(tokIndex + 1).getType().equals("minus") || tokenList.get(tokIndex + 1).getType().equals("divide") ||
+                    tokenList.get(tokIndex + 1).getType().equals("power")){
+                NodeType type = map.get(tokenList.get(tokIndex).getValue());
+                if (type.equals(NodeType.DOUBLE)) {
+                    ptr = new ParseTreeNode(expr, NodeType.D_EXPR);
+                    expandDExpr(tokenList, ptr);
+                    expr.addChild(ptr);
+                }
+
+                else if (type.equals(NodeType.INTEGER)) {
+                    ptr = new ParseTreeNode(expr, NodeType.I_EXPR);
+                    expandIExpr(tokenList, ptr);
+                    expr.addChild(ptr);
+                }
+
+                //check
+                else if (type.equals(NodeType.STR)) {
+                    ptr = new ParseTreeNode(expr, NodeType.S_EXPR);
+                    expandSExpr(tokenList, ptr);
+                    expr.addChild(ptr);
+                }
+
+                else {
+                    //error handling
+                    System.out.println("No variable found...");
+                }
+            }
+
+            else {
+                NodeType type = map.get(tokenList.get(tokIndex).getValue());
+                if (type == null) {
+                    //TODO: ERROR
+                }
+                ptr = new ParseTreeNode(expr, NodeType.ID);
+                expandId(tokenList, ptr);
+                expr.addChild(ptr);
+            }
+            //expandId(tokenList, ptr);
+            //expr.addChild(ptr);
+        }
+
+        else if (tokenList.get(tokIndex).getType().equals("minus")) {
+            if (tokIndex + 1  == tokenList.size()) {
+                //TODO:ERROR
+            }
+
+            else if (tokenList.get(tokIndex + 1).getType().equals("double")) {
+                ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.D_EXPR);
+                expandDExpr(tokenList, ptr);
+                expr.addChild(ptr);
+            }
+
+            else if (tokenList.get(tokIndex + 1).getType().equals("integer")){
+                ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.I_EXPR);
+                expandIExpr(tokenList, ptr);
+                expr.addChild(ptr);
+            }
+        }
+
+        else {
+            //TODO: ERROR
+        }
+    }
+
+    private static void expandSExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr){
+        String type = tokenList.get(tokIndex).getType();
+        List<ParseTreeNode> children = dexpr.getAllChildren();
+
+        if (type.equals("string")) {
+            ParseTreeNode ptr = new ParseTreeNode(dexpr, NodeType.STR_LITERAL);
+
+        }
+
+
+    }
+
+
+
+
+
+
+    private static void expandIExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr) {
+        String type = tokenList.get(tokIndex).getType();
+        List<ParseTreeNode> children = dexpr.getAllChildren();
+
+
+        // <id> case
+        if (type.equals("lower_keyword")) {
+            ParseTreeNode node = new ParseTreeNode(dexpr, NodeType.ID);
+            expandId(tokenList, node);
+            dexpr.addChild(node);
+            tokIndex ++;
+            expandIExpr(tokenList, dexpr);
+        }
+
+        else if (type.equals("integer")) {
+            ParseTreeNode node = new ParseTreeNode(dexpr, NodeType.INT);
+            expandDBL(tokenList, node);
+            dexpr.addChild(node);
+            tokIndex ++;
+            expandIExpr(tokenList, dexpr);
+        }
+
+        else if (type.equals("start_paren")) {
+            ParseTreeNode child1 = new ParseTreeNode(dexpr, NodeType.I_EXPR);
+            tokIndex ++;
+            expandIExpr(tokenList, child1);
+            dexpr.addChild(child1);
+
+            tokIndex ++;
+            expandIExpr(tokenList, dexpr);
+        }
+
+        else if (type.equals("end_paren")) {
+            // TODO: handle error
+        }
+
+        else if (type.equals("minus")) {
+
+            if (!tokenList.get(tokIndex - 1).getValue().equals("+") && !tokenList.get(tokIndex - 1).getValue().equals("-") &&
+                    !tokenList.get(tokIndex - 1).getValue().equals("/") && !tokenList.get(tokIndex - 1).getValue().equals("*") &&
+                    !tokenList.get(tokIndex - 1).getValue().equals("^") && !tokenList.get(tokIndex - 1).getValue().equals("(") &&
+                    !tokenList.get(tokIndex - 1).getType().equals("print")) {
+                ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP, "-");
+
+
+                if (children.size() > 1) {
+                    if (children.size() == 3) {
+                        ParseTreeNode child = new ParseTreeNode(dexpr, NodeType.I_EXPR);
+                        children.get(0).setParent(child);
+                        children.get(1).setParent(child);
+                        children.get(2).setParent(child);
+                        child.addChild(children.get(0));
+                        child.addChild(children.get(1));
+                        child.addChild(children.get(2));
+                        dexpr.removeAllChild();
+
+                        dexpr.addChild(child);
+                        dexpr.addChild(op);
+
+                        tokIndex ++;
+                        expandIExpr(tokenList, dexpr);
+                    }
+                    else {
+                        //TODO:ERROR
+                    }
+                }
+
+
+                else {
+                    dexpr.addChild(op);
+                }
+            }
+
+
+
+            // TODO: check for error behind the plus sign
+            tokIndex ++;
+            expandIExpr(tokenList, dexpr);
+        }
+
+        else if (type.equals("plus") || type.equals("divide") || type.equals("power") || type.equals("mult")) {
+            ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP, "+");
+            if (type.equals("divide")) op = new ParseTreeNode(dexpr, NodeType.OP, "/");
+            if (type.equals("mult")) op = new ParseTreeNode(dexpr, NodeType.OP, "*");
+            if (type.equals("power")) op = new ParseTreeNode(dexpr, NodeType.OP, "^");
+
+
+            if (children.size() > 1) {
+                if (children.size() == 3) {
+                    ParseTreeNode child = new ParseTreeNode(dexpr, NodeType.I_EXPR);
+                    children.get(0).setParent(child);
+                    children.get(1).setParent(child);
+                    children.get(2).setParent(child);
+                    child.addChild(children.get(0));
+                    child.addChild(children.get(1));
+                    child.addChild(children.get(2));
+                    dexpr.removeAllChild();
+
+                    dexpr.addChild(child);
+                    dexpr.addChild(op);
+
+                    tokIndex ++;
+                    expandIExpr(tokenList, dexpr);
+                }
+                else {
+                    //TODO:ERROR
+                }
+            }
+
+            else {
+                dexpr.addChild(op);
+            }
+
+            // TODO: check for error behind the sign
+            tokIndex ++;
+            expandIExpr(tokenList, dexpr);
+        }
+
+
+        else if (type.equals("end_stmt")) {
+            //return
+        }
+
+        else {
+            // TODO: Handle error
+            System.out.println("Error read in");
+        }
+
     }
 
     private static void expandSExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode s_expr) {
@@ -252,6 +506,8 @@ public class JottParser {
 
     private static void expandDExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode dexpr){
         String type = tokenList.get(tokIndex).getType();
+        List<ParseTreeNode> children = dexpr.getAllChildren();
+
         // <id> case
         if (type.equals("lower_keyword")) {
             ParseTreeNode node = new ParseTreeNode(dexpr, NodeType.ID);
@@ -281,55 +537,84 @@ public class JottParser {
 
         else if (type.equals("end_paren")) {
             // TODO: handle error
-//            if (tokenList.get(tokIndex + 1).getValue().equals("(") || tokenList.get(tokIndex + 1).getValue().equals("(")) {
-//                tokIndex ++;
-//            }
         }
 
         else if (type.equals("minus")) {
 
             if (!tokenList.get(tokIndex - 1).getValue().equals("+") && !tokenList.get(tokIndex - 1).getValue().equals("-") &&
                     !tokenList.get(tokIndex - 1).getValue().equals("/") && !tokenList.get(tokIndex - 1).getValue().equals("*") &&
-                    !tokenList.get(tokIndex - 1).getValue().equals("^")) {
-                ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP);
-                ParseTreeNode leave = new ParseTreeNode(op, "-");
-                op.addChild(leave);
-                dexpr.addChild(op);
+                    !tokenList.get(tokIndex - 1).getValue().equals("^") && !tokenList.get(tokIndex - 1).getValue().equals("(") &&
+                    !tokenList.get(tokIndex - 1).getType().equals("print")) {
+                ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP, "-");
+
+
+                if (children.size() > 1) {
+                    if (children.size() == 3) {
+                        ParseTreeNode child = new ParseTreeNode(dexpr, NodeType.D_EXPR);
+                        children.get(0).setParent(child);
+                        children.get(1).setParent(child);
+                        children.get(2).setParent(child);
+                        child.addChild(children.get(0));
+                        child.addChild(children.get(1));
+                        child.addChild(children.get(2));
+                        dexpr.removeAllChild();
+
+                        dexpr.addChild(child);
+                        dexpr.addChild(op);
+
+                        tokIndex ++;
+                        expandDExpr(tokenList, dexpr);
+                    }
+                    else {
+                        //TODO:ERROR
+                    }
+                }
+
+
+                else {
+                    dexpr.addChild(op);
+                }
             }
 
 
-            // TODO: check for error behind the plus sign
-            tokIndex ++;
-            expandDExpr(tokenList, dexpr);
-        }
-
-        else if (type.equals("mult")) {
-            ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP);
-            ParseTreeNode leave = new ParseTreeNode(op, "*");
-            op.addChild(leave);
-            dexpr.addChild(op);
 
             // TODO: check for error behind the plus sign
             tokIndex ++;
             expandDExpr(tokenList, dexpr);
         }
 
-        else if (type.equals("divide")) {
-            ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP);
-            ParseTreeNode leave = new ParseTreeNode(op, "/");
-            op.addChild(leave);
-            dexpr.addChild(op);
+        else if (type.equals("plus") || type.equals("divide")  || type.equals("power") || type.equals("mult")) {
+            ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP, "+");
+            if (type.equals("divide")) op = new ParseTreeNode(dexpr, NodeType.OP, "/");
+            if (type.equals("mult")) op = new ParseTreeNode(dexpr, NodeType.OP, "*");
+            if (type.equals("power")) op = new ParseTreeNode(dexpr, NodeType.OP, "^");
 
-            // TODO: check for error behind the sign
-            tokIndex ++;
-            expandDExpr(tokenList, dexpr);
-        }
 
-        else if (type.equals("plus")) {
-            ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP);
-            ParseTreeNode leave = new ParseTreeNode(op, "+");
-            op.addChild(leave);
-            dexpr.addChild(op);
+            if (children.size() > 1) {
+                if (children.size() == 3) {
+                    ParseTreeNode child = new ParseTreeNode(dexpr, NodeType.D_EXPR);
+                    children.get(0).setParent(child);
+                    children.get(1).setParent(child);
+                    children.get(2).setParent(child);
+                    child.addChild(children.get(0));
+                    child.addChild(children.get(1));
+                    child.addChild(children.get(2));
+                    dexpr.removeAllChild();
+
+                    dexpr.addChild(child);
+                    dexpr.addChild(op);
+
+                    tokIndex ++;
+                    expandDExpr(tokenList, dexpr);
+                }
+                else {
+                    //TODO:ERROR
+                }
+            }
+
+            else {
+                dexpr.addChild(op);
+            }
 
             // TODO: check for error behind the sign
             tokIndex ++;
@@ -362,84 +647,98 @@ public class JottParser {
 
     private static void expandId(List<JottTokenizer.Token> tokenList, ParseTreeNode id) {
         String val = tokenList.get(tokIndex).getValue();
-        if (Character.isUpperCase(val.charAt(1))) {
+        String res = "";
+        if (Character.isUpperCase(val.charAt(0))) {
             //error
             System.out.println("Id cannot begin with an uppercase letter");
-            //return null;
         }
-        ParseTreeNode ptr = new ParseTreeNode(id, NodeType.L_CHAR);
-        ParseTreeNode leave = new ParseTreeNode(ptr, Character.toString(val.charAt(1)));
-        ptr.addChild(leave);
+        res += val.charAt(0);
 
 
-        for (int i = 2; i < val.length(); i++) {
-            if (val.charAt(i) == '[' | val.charAt(i) == ']' | val.charAt(i) == ',' | val.charAt(i) == ' '){
-                continue;
-            }
-
-            ParseTreeNode child = new ParseTreeNode(ptr, NodeType.CHAR);
-            expandChar(val.charAt(i), child);
-            ptr.addChild(child);
-
+        for (int i = 1; i < val.length(); i++) {
+            //TODO: check for error
         }
-        id.addChild(ptr);
-    }
 
-    private static void expandChar(char c, ParseTreeNode parent){
-        ParseTreeNode child = null;
-        if (parent.getNodeType().equals(NodeType.L_CHAR))
-            child = new ParseTreeNode(parent, NodeType.L_CHAR);
-        else if (parent.getNodeType().equals(NodeType.U_CHAR))
-            child = new ParseTreeNode(parent, NodeType.U_CHAR);
-        else
-            child = new ParseTreeNode(parent, NodeType.DIGIT);
-
-        expandLUCharAndDigit(c, child);
-        parent.addChild(child);
-
-    }
-
-    private static void expandLUCharAndDigit(char c, ParseTreeNode parent) {
-        ParseTreeNode leave = new ParseTreeNode(parent, Character.toString(c));
-        parent.addChild(leave);
+        id.setValue(val);
     }
 
 
     private static void expandDBL(List<JottTokenizer.Token> tokenList, ParseTreeNode dbl) {
-        String type = tokenList.get(tokIndex).getType();
+        //String type = tokenList.get(tokIndex).getType();
         String val = tokenList.get(tokIndex).getValue();
         ParseTreeNode child = null;
         String sign = tokenList.get(tokIndex - 1).getType();
+        String newSign = "";
 
         if (sign.equals("minus")) {
-            if (tokenList.get(tokIndex - 2).getType().equals("plus") || tokenList.get(tokIndex - 2).getType().equals("minus") || tokenList.get(tokIndex - 2).getType().equals("mult") || tokenList.get(tokIndex - 2).getType().equals("divide") || tokenList.get(tokIndex - 2).getType().equals("power")) {
-                child = new ParseTreeNode(dbl, NodeType.MINUS);
+            if (tokenList.get(tokIndex - 2).getType().equals("plus") || tokenList.get(tokIndex - 2).getType().equals("minus") ||
+                    tokenList.get(tokIndex - 2).getType().equals("mult") || tokenList.get(tokIndex - 2).getType().equals("divide") ||
+                    tokenList.get(tokIndex - 2).getType().equals("power") || tokenList.get(tokIndex - 2).getType().equals("start_paren") ||
+                    tokenList.get(tokIndex - 2).getType().equals("print")) {
+                newSign = "-";
             }
-            else
-                child = new ParseTreeNode(dbl, NodeType.PLUS);
+            else {
+                newSign = "+";
+            }
         }
 
         else {
-            child = new ParseTreeNode(dbl, NodeType.PLUS);
+            newSign = "+";
         }
-        dbl.addChild(child);
 
-        for (int i = 0; i < val.length(); i ++){
-            if (val.charAt(i) == '[' | val.charAt(i) == ']' | val.charAt(i) == ',' | val.charAt(i) == ' '){
-                continue;
-            }
-            expandLUCharAndDigit(val.charAt(i), dbl);
+        if (newSign.equals("+")) {
+            dbl.setValue(val);
+        }
+
+        else {
+            dbl.setValue("-" + val);
         }
     }
 
 
 
-    private static boolean isFinalStatement(List<JottTokenizer.Token> tokenList, int tokIndex) {
-        int i = tokIndex;
-        while (!(tokenList.get(i).getType().equals("end_stmt")) && i < tokenList.size()) {
-            i++;
-        }
-        return (i == tokenList.size() - 1 || i == tokenList.size());
+    public static void expandPrint(List<JottTokenizer.Token> tokenList, ParseTreeNode print) {
+        ParseTreeNode child1 = new ParseTreeNode(print, NodeType.START_PAREN);
+        ParseTreeNode child2 = new ParseTreeNode(print, NodeType.EXPR);
+        ParseTreeNode child3 = new ParseTreeNode(print, NodeType.END_PAREN);
+
+        tokIndex ++;
+        expandExpr(tokenList, child2);
+        print.addChild(child1);
+        print.addChild(child2);
+        print.addChild(child3);
+
+        //tokIndex ++;
+        //TODO:ERROR HANDLING
+        tokIndex ++;
+        // TODO: ERROR
+        print.addChild(new ParseTreeNode(print, NodeType.END_STMT));
+    }
+
+
+    public static void main(String[] args){
+        //String s = "print( 3 + 4 * 7 ); print( 5 - -2 * 3 ); print(2*3 + 9); print(2 * 3 * 7); Integer x = 5 + -7; Integer y = 90; Integer z = (1 + 3) - (4 * 0); print( x + y ); print( x + y + z);";
+        //String s = "print( 3 );print( 3.2 );print( 3 + 2 );print( 3.2 + 5.1 );print( 3 + 4 * 7 );Integer x = 5;print( x );print( -5 );print( -3.2 );print( -5 - 2 );";
+        //s = "print( 5 - -2 * 3 );print(-5-2)";
+        String s = "print( 3 );" +
+                "print( 3.2 );print( 3 + 2 );" +
+                "print( 3.2 + 5.1 );" +
+                "print( 3.0 + 4.0 * 7.0 );" +
+                "Integer x = 5;" +
+                "print( x );print( -5 );" +
+                "print( -3.2 );" +
+                "print( -5 - 2 );" +
+                "print( 5.0 - -2.0 * 3.0 );" +
+                "print( 5.0 / 2.0 );" +
+                "print( 5.0 + 2.0 ^ 4.0 );" +
+                "print( x + 2 );" +
+                "print( x + 6 );print( x + x );";
+        //s = "print(-5+-2-1); print(5+2^4);";
+        //s = "print(-3.2);";
+        List<JottTokenizer.Token> tokens = JottTokenizer.JottTokenizer(s);
+        ParseTreeNode tree = parseTokens(tokens);
+        JottEvaluation evaluation = new JottEvaluation();
+        List<String> outputs = evaluation.JottEvaluation(tree);
     }
 
 

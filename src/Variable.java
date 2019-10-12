@@ -1,4 +1,3 @@
-import java.lang.reflect.Type;
 
 public class Variable {
     //name of variable.

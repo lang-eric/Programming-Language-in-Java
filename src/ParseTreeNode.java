@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ParseTreeNode {
+
 	private ParseTreeNode parent;
 	private String token;
 	private List<ParseTreeNode> children;
@@ -10,24 +11,27 @@ public class ParseTreeNode {
 	private String value;
 
 
-	private ParseTreeNode(ParseTreeNode parent) {
-		this.parent = parent;
-		this.children = new ArrayList<ParseTreeNode>();
-	}
+//	private ParseTreeNode(ParseTreeNode parent, NodeType program) {
+//		this.parent = parent;
+//		this.children = new ArrayList<ParseTreeNode>();
+//	}
 
 	/**
 	 * Leave node constructor
 	 * @param parent
 	 * @param value
 	 */
-	public ParseTreeNode(ParseTreeNode parent, String value){
+	public ParseTreeNode(ParseTreeNode parent, NodeType type, String value){
 		this.parent = parent;
+		this.type = type;
+		this.children = new ArrayList<>();
 		this.value = value;
 	}
 
 	public ParseTreeNode(ParseTreeNode parent, NodeType type) {
-		this(parent);
+		this.parent = parent;
 		this.type = type;
+		this.children = new ArrayList<>();
 	}
 
 	/**
@@ -50,9 +54,34 @@ public class ParseTreeNode {
 		return null;
 	}
 
+	public List<ParseTreeNode> getAllChildren(){
+		return children;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {this.value = value; }
+
 	public ParseTreeNode getParent() { return this.parent; }
+
+	public void setParent(ParseTreeNode parent) {this.parent = parent; }
 
 	public NodeType getNodeType() { return this.type; }
 
 	public void setToken(String term) { this.token = term; }
+
+	public void removeChild(int idx) {
+		if (idx >= children.size() || idx < 0) {
+			System.out.println("Error");
+		}
+		else {
+			children.remove(idx);
+		}
+	}
+
+	public void removeAllChild() {
+		children = new ArrayList<>();
+	}
 }

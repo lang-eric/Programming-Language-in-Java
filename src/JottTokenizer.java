@@ -27,6 +27,12 @@ import java.util.ArrayList;
 
 
 public class JottTokenizer {
+    private static VariableRegister variableRegister = new VariableRegister();
+
+    public static VariableRegister getVariableRegister(){
+        return variableRegister;
+    }
+
     public static class Token{
         String type;
         String value;
@@ -348,14 +354,14 @@ public class JottTokenizer {
                     " at line "+line_number + ", character "+character_count));
             System.exit(-1);
         }
-        for(int i = 0; i< Tokens.size(); i++){
-            if(Tokens.get(i).type.equals("assign"))
-            {
-                System.out.println(Tokens.get(i+1).getType());
-                VariableRegister.addVariable(Tokens.get(i-1).getValue(), Tokens.get(i+1).type, Tokens.get(i+1).value);
-            }
-
-        }
+//        for(int i = 0; i< Tokens.size(); i++){
+//            if(Tokens.get(i).type.equals("assign"))
+//            {
+//                System.out.println(Tokens.get(i+1).getType());
+//                variableRegister.addVariable(Tokens.get(i-1).getValue(), Tokens.get(i+1).type, Tokens.get(i+1).value);
+//            }
+//
+//        }
         return Tokens;
 
     }

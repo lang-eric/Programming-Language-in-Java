@@ -23,6 +23,10 @@ public class JottRunner {
             for (JottTokenizer.Token token: TokenList) {
                 System.out.println("Token Type: "+token.getType()+" Token Value: "+token.getValue());
             }
+
+            ParseTreeNode tree = JottParser.parseTokens(TokenList);
+            List<String> out = JottEvaluation.JottEvaluation(tree);
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             System.out.println("Error, invalid file.");
