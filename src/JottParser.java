@@ -1,3 +1,4 @@
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -76,6 +77,13 @@ public class JottParser {
             stmt.addChild(prt);
         }
 
+        else if (type.equals(NodeType.END_STMT)) {
+            tokIndex ++;
+            if (tokIndex < tokenList.size()) {
+                expandStmt(tokenList, stmt);
+            }
+        }
+
         else if (type.equals("type_Double")) {
             ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.ASMT);
             expandASMT(tokenList, prt, NodeType.DOUBLE);
@@ -135,6 +143,7 @@ public class JottParser {
             expandDExpr(tokenList, child3);
             parent.addChild(child3);
 
+            tokIndex++;
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex ++;
         }
@@ -167,6 +176,36 @@ public class JottParser {
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex ++;
         }
+
+        else if (type.equals(NodeType.STR)) {
+            ParseTreeNode child = new ParseTreeNode(parent, NodeType.STR);
+            parent.addChild(child);
+            tokIndex++;
+            ParseTreeNode id = new ParseTreeNode(parent, NodeType.ID);
+            expandId(tokenList, id);
+            cur_type = NodeType.STR;
+            cur_varName = id.getValue();
+            map.put(cur_varName, cur_type);
+            parent.addChild(id);
+
+            tokIndex++;
+            if (!tokenList.get(tokIndex).getType().equals("assign")) {
+                System.out.println("Missing assignment Error");
+                return;
+            }
+
+            ParseTreeNode child2 = new ParseTreeNode(parent, NodeType.OP, "=");
+            parent.addChild(child2);
+
+            tokIndex++;
+            ParseTreeNode child3 = new ParseTreeNode(parent, NodeType.S_EXPR);
+            expandSExpr(tokenList, child3);
+            parent.addChild(child3);
+
+            parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
+            tokIndex ++;
+            tokIndex ++;
+        }
     }
 
     private static void expandExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode expr) {
@@ -185,7 +224,9 @@ public class JottParser {
         }
 
         //TODO: implement <s_expr> case
-        else if (tokenList.get(tokIndex).getType().equals("string")) {
+        else if (tokenList.get(tokIndex).getType().equals("string")||
+                tokenList.get(tokIndex).getType().equals("concat")||
+                tokenList.get(tokIndex).getType().equals("charAt")) {
             ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.S_EXPR);
             expandSExpr(tokenList, ptr);
             expr.addChild(ptr);
@@ -255,6 +296,9 @@ public class JottParser {
             }
         }
 
+
+
+
         else {
             //TODO: ERROR
         }
@@ -266,7 +310,58 @@ public class JottParser {
 
         if (type.equals("string")) {
             ParseTreeNode ptr = new ParseTreeNode(dexpr, NodeType.STR_LITERAL);
+            ptr.setValue(tokenList.get(tokIndex).getValue());
+            dexpr.addChild(ptr);
+        }
 
+        else if (type.equals("lower_keyword")) {
+            ParseTreeNode ptr = new ParseTreeNode(dexpr, NodeType.ID);
+            ptr.setValue(tokenList.get(tokIndex).getValue());
+            dexpr.addChild(ptr);
+        }
+
+        else if (type.equals("concat")) {
+            ParseTreeNode ptr = new ParseTreeNode(dexpr, NodeType.CONCAT);
+            ParseTreeNode left = new ParseTreeNode(dexpr, NodeType.S_EXPR);
+            tokIndex ++;
+            expandSExpr(tokenList, left);
+            ptr.addChild(left);
+
+            tokIndex ++;
+            ptr.addChild(new ParseTreeNode(dexpr, NodeType.COMMA, ","));
+
+            ParseTreeNode right = new ParseTreeNode(dexpr, NodeType.S_EXPR);
+            tokIndex ++;
+            expandSExpr(tokenList, right);
+            ptr.addChild(right);
+
+            dexpr.addChild(ptr);
+
+        }
+
+        else if (type.equals("charAt")) {
+            ParseTreeNode ptr = new ParseTreeNode(dexpr, NodeType.CHARAT);
+            ParseTreeNode left = new ParseTreeNode(dexpr, NodeType.S_EXPR);
+            tokIndex ++;
+            expandSExpr(tokenList, left);
+            ptr.addChild(left);
+
+            tokIndex ++;
+            ptr.addChild(new ParseTreeNode(dexpr, NodeType.COMMA, ","));
+
+            ParseTreeNode right = new ParseTreeNode(dexpr, NodeType.I_EXPR);
+            tokIndex ++;
+            expandIExpr(tokenList, right);
+            ptr.addChild(right);
+
+            dexpr.addChild(ptr);
+
+        }
+
+
+
+        else {
+            //error
         }
 
 
@@ -601,38 +696,10 @@ public class JottParser {
         print.addChild(child2);
         print.addChild(child3);
 
-        //tokIndex ++;
         //TODO:ERROR HANDLING
         tokIndex ++;
         // TODO: ERROR
         print.addChild(new ParseTreeNode(print, NodeType.END_STMT));
     }
-
-
-    public static void main(String[] args){
-        //String s = "print( 3 + 4 * 7 ); print( 5 - -2 * 3 ); print(2*3 + 9); print(2 * 3 * 7); Integer x = 5 + -7; Integer y = 90; Integer z = (1 + 3) - (4 * 0); print( x + y ); print( x + y + z);";
-        //String s = "print( 3 );print( 3.2 );print( 3 + 2 );print( 3.2 + 5.1 );print( 3 + 4 * 7 );Integer x = 5;print( x );print( -5 );print( -3.2 );print( -5 - 2 );";
-        //s = "print( 5 - -2 * 3 );print(-5-2)";
-        String s = "print( 3 );" +
-                "print( 3.2 );print( 3 + 2 );" +
-                "print( 3.2 + 5.1 );" +
-                "print( 3.0 + 4.0 * 7.0 );" +
-                "Integer x = 5;" +
-                "print( x );print( -5 );" +
-                "print( -3.2 );" +
-                "print( -5 - 2 );" +
-                "print( 5.0 - -2.0 * 3.0 );" +
-                "print( 5.0 / 2.0 );" +
-                "print( 5.0 + 2.0 ^ 4.0 );" +
-                "print( x + 2 );" +
-                "print( x + 6 );print( x + x );";
-        //s = "print(-5+-2-1); print(5+2^4);";
-        //s = "print(-3.2);";
-        List<JottTokenizer.Token> tokens = JottTokenizer.JottTokenizer(s);
-        ParseTreeNode tree = parseTokens(tokens);
-        JottEvaluation evaluation = new JottEvaluation();
-        List<String> outputs = evaluation.JottEvaluation(tree);
-    }
-
 
 }

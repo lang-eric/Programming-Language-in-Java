@@ -89,6 +89,10 @@ public class JottEvaluation {
             varName = "";
         }
 
+        else if (children.get(0).getNodeType().equals(NodeType.STMT)) {
+            stmtEval(children.get(0));
+        }
+
         else if (children.get(0).getNodeType().equals(NodeType.PRINT)) {
             varName = "";
             printEval(children.get(0));
@@ -131,8 +135,53 @@ public class JottEvaluation {
     }
 
     public static String stringEval(ParseTreeNode tree) {
-        return null;
+        int nums = tree.getAllChildren().size();
+        List<ParseTreeNode> children = tree.getAllChildren();
+        String ans = "";
+        if (tree.getNodeType().equals(NodeType.STR_LITERAL)) {
+            if (!varName.isEmpty())
+                map.put(varName, new Variable(varName, "string", tree.getValue()));
+            return tree.getValue();
+        }
+
+        else if (tree.getNodeType().equals(NodeType.S_EXPR)) {
+            return stringEval(children.get(0));
+        }
+
+        else if (tree.getNodeType().equals(NodeType.CONCAT)) {
+            if (nums == 3) {
+
+
+                String left = stringEval(children.get(0));
+                String right = stringEval(children.get(2));
+
+                ans = left + right;
+                map.put(varName, new Variable(varName, "string", ans));
+            }
+            //TODO:ERROR
+            return ans;
+        }
+
+        else if (tree.getNodeType().equals(NodeType.CHARAT)) {
+            if (nums == 3) {
+
+                String left = stringEval(children.get(0));
+                String right = intEval(children.get(2));
+
+                int idx = Integer.parseInt(right);
+
+                ans = String.valueOf(left.charAt(idx));
+                map.put(varName, new Variable(varName, "string", ans));
+            }
+            //TODO:ERROR
+            return ans;
+        }
+
+        else {
+            return map.get(tree.getValue()).getValue();
+        }
     }
+
 
     public static String intEval(ParseTreeNode tree) {
         int nums = tree.getAllChildren().size();

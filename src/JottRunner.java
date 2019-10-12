@@ -26,6 +26,11 @@ public class JottRunner {
 
             ParseTreeNode tree = JottParser.parseTokens(TokenList);
             List<String> out = JottEvaluation.JottEvaluation(tree);
+            PrintStream output = new PrintStream(new FileOutputStream(file_name.substring(0, file_name.length() - 1) + "out", true));
+            for (String s : out) {
+                output.println(s);
+            }
+
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
