@@ -20,8 +20,10 @@ public class ParseTreeNode {
 	 * @param parent
 	 * @param value
 	 */
-	public ParseTreeNode(ParseTreeNode parent, String value){
+	public ParseTreeNode(ParseTreeNode parent, NodeType type, String value){
 		this.parent = parent;
+		this.type = type;
+		this.children = new ArrayList<>();
 		this.value = value;
 	}
 
@@ -50,9 +52,34 @@ public class ParseTreeNode {
 		return null;
 	}
 
+	public List<ParseTreeNode> getAllChildren(){
+		return children;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {this.value = value; }
+
 	public ParseTreeNode getParent() { return this.parent; }
+
+	public void setParent(ParseTreeNode parent) {this.parent = parent; }
 
 	public NodeType getNodeType() { return this.type; }
 
 	public void setToken(String term) { this.token = term; }
+
+	public void removeChild(int idx) {
+		if (idx >= children.size() || idx < 0) {
+			System.out.println("Error");
+		}
+		else {
+			children.remove(idx);
+		}
+	}
+
+	public void removeAllChild() {
+		children = new ArrayList<>();
+	}
 }

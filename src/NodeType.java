@@ -36,6 +36,7 @@ enum NodeType {
     DOT,
     COMMA,
     $$,
-    EPSILON
+    EPSILON,
+    INTEGER
 
 }
