@@ -143,7 +143,6 @@ public class JottParser {
             expandDExpr(tokenList, child3);
             parent.addChild(child3);
 
-            tokIndex++;
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex ++;
         }
@@ -337,6 +336,16 @@ public class JottParser {
 
             dexpr.addChild(ptr);
 
+            tokIndex ++;
+//            if (tokenList.get(tokIndex).getValue().equals(")")) {
+//                tokIndex ++;
+//            }
+
+//            if (tokenList.get(tokIndex).getValue().equals(";")) {
+//                //TODO: ERRor
+//                return;
+//            }
+
         }
 
         else if (type.equals("charAt")) {
@@ -351,6 +360,14 @@ public class JottParser {
 
             ParseTreeNode right = new ParseTreeNode(dexpr, NodeType.I_EXPR);
             tokIndex ++;
+
+
+
+//            if (tokenList.get(tokIndex).getValue().equals(";")) {
+//                //TODO: ERRor
+//                return;
+//            }
+
             expandIExpr(tokenList, right);
             ptr.addChild(right);
 
