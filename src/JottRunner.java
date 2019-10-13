@@ -33,9 +33,9 @@ public class JottRunner {
             output.close();
 
 
-            for(String output: out) {
-                System.out.println(output);
-            }
+//            for(String out: output) {
+//                System.out.println(out);
+//            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
