@@ -4,7 +4,6 @@ import java.util.List;
 
 public class JottEvaluation {
 
-    private static MathematicOperation mathematicOperation = new MathematicOperation();
     private static List<String> outputs = new ArrayList<>();
     private static HashMap<String, Variable> map = new HashMap<>();
 
@@ -50,8 +49,11 @@ public class JottEvaluation {
         } else if (op.equals("^")) {
             if (obj1 instanceof Integer) {
                 ans_double = Math.pow((int) obj1, (int) obj2);
-                ans = (int) Math.round(ans_double);
-                return String.valueOf(ans);
+                if (ans_double > 0) {
+                    ans = (int) Math.round(ans_double);
+                    return String.valueOf(ans);
+                }
+                return String.valueOf(ans_double);
             } else {
                 ans_double = Math.pow((double) obj1, (double) obj2);
             }
@@ -89,13 +91,17 @@ public class JottEvaluation {
             varName = "";
         }
 
+        else if (children.get(0).getNodeType().equals(NodeType.STMT)) {
+            stmtEval(children.get(0));
+        }
+
         else if (children.get(0).getNodeType().equals(NodeType.PRINT)) {
             varName = "";
             printEval(children.get(0));
         }
 
         else {
-            exprEval(children.get(0));
+
         }
     }
 
@@ -237,9 +243,6 @@ public class JottEvaluation {
 
     }
 
-    public static void exprEval(ParseTreeNode tree) {
-
-    }
 
     public static String doubleEval(ParseTreeNode tree) {
         int nums = tree.getAllChildren().size();

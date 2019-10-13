@@ -83,6 +83,13 @@ public class JottParser {
             stmt.addChild(prt);
         }
 
+        else if (type.equals(NodeType.END_STMT)) {
+            tokIndex ++;
+            if (tokIndex < tokenList.size()) {
+                expandStmt(tokenList, stmt);
+            }
+        }
+
         else if (type.equals("type_Double")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
             expandASMT(tokenList, asmt, NodeType.DOUBLE);
@@ -226,6 +233,7 @@ public class JottParser {
             expandSExpr(tokenList, s_expr);
             expr.addChild(s_expr);
         }
+
         //TODO: implement <id> case
         else if (tokenList.get(tokIndex).getType().equals("lower_keyword")) {
             ParseTreeNode ptr = new ParseTreeNode(expr, NodeType.ID);
@@ -289,6 +297,9 @@ public class JottParser {
                 expr.addChild(ptr);
             }
         }
+
+
+
 
         else {
             //TODO: ERROR
@@ -712,7 +723,6 @@ public class JottParser {
         print.addChild(child2);
         print.addChild(child3);
 
-        //tokIndex ++;
         //TODO:ERROR HANDLING
         tokIndex ++;
         // TODO: ERROR
