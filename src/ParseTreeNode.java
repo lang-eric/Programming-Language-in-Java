@@ -32,6 +32,15 @@ public class ParseTreeNode {
 		this.parent = parent;
 		this.type = type;
 		this.children = new ArrayList<>();
+		this.value = null;
+	}
+
+	public ParseTreeNode getRootNode() {
+		if(this.parent == null) {
+			return this;
+		} else {
+			return this.getParent().getRootNode();
+		}
 	}
 
 	/**
@@ -83,5 +92,23 @@ public class ParseTreeNode {
 
 	public void removeAllChild() {
 		children = new ArrayList<>();
+	}
+
+	/**
+	 * Tests if the node instance is a leaf node or not.
+	 * @return true if this node's children list is empty; false otherwise
+	 */
+	public boolean isLeafNode() {
+		return this.children.isEmpty();
+	}
+
+	@Override
+	public String toString() {
+		if(this.value == null) {
+			return this.type.toString();
+		}
+		else {
+			return this.value;
+		}
 	}
 }

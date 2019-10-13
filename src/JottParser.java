@@ -50,7 +50,7 @@ public class JottParser {
         root.addChild(new ParseTreeNode(root, NodeType.$$));
 
 
-
+//        traverseTree(root, 0);
         return root;
     }
 
@@ -292,6 +292,12 @@ public class JottParser {
 
         else {
             //TODO: ERROR
+            /*JottTokenizer.Token tikToken = tokenList.get(tokIndex);
+            System.out.println("Error encountered in parsing expression at "
+                    + tikToken.line + ":" + tikToken.character_count + " " + tikToken.getValue());
+            traverseTree(expr.getRootNode(), 0);
+            traverseTree(expr, 1);
+            System.exit(1);*/
         }
     }
 
@@ -713,31 +719,15 @@ public class JottParser {
         print.addChild(new ParseTreeNode(print, NodeType.END_STMT));
     }
 
-
-    public static void main(String[] args){
-        //String s = "print( 3 + 4 * 7 ); print( 5 - -2 * 3 ); print(2*3 + 9); print(2 * 3 * 7); Integer x = 5 + -7; Integer y = 90; Integer z = (1 + 3) - (4 * 0); print( x + y ); print( x + y + z);";
-        //String s = "print( 3 );print( 3.2 );print( 3 + 2 );print( 3.2 + 5.1 );print( 3 + 4 * 7 );Integer x = 5;print( x );print( -5 );print( -3.2 );print( -5 - 2 );";
-        //s = "print( 5 - -2 * 3 );print(-5-2)";
-        String s = "print( 3 );" +
-                "print( 3.2 );print( 3 + 2 );" +
-                "print( 3.2 + 5.1 );" +
-                "print( 3.0 + 4.0 * 7.0 );" +
-                "Integer x = 5;" +
-                "print( x );print( -5 );" +
-                "print( -3.2 );" +
-                "print( -5 - 2 );" +
-                "print( 5.0 - -2.0 * 3.0 );" +
-                "print( 5.0 / 2.0 );" +
-                "print( 5.0 + 2.0 ^ 4.0 );" +
-                "print( x + 2 );" +
-                "print( x + 6 );print( x + x );";
-        //s = "print(-5+-2-1); print(5+2^4);";
-        //s = "print(-3.2);";
-        List<JottTokenizer.Token> tokens = JottTokenizer.JottTokenizer(s);
-        ParseTreeNode tree = parseTokens(tokens);
-        JottEvaluation evaluation = new JottEvaluation();
-        List<String> outputs = evaluation.JottEvaluation(tree);
+    public static void traverseTree(ParseTreeNode node, int depth) {
+        for(int i = 0; i < depth; ++i) {
+            System.out.print("  ");
+        }
+        System.out.println(node.toString());
+        if (!node.isLeafNode()) {
+            for(ParseTreeNode child: node.getAllChildren()) {
+                traverseTree(child, depth + 1);
+            }
+        }
     }
-
-
 }

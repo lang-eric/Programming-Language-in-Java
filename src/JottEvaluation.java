@@ -131,7 +131,46 @@ public class JottEvaluation {
     }
 
     public static String stringEval(ParseTreeNode tree) {
-        return null;
+        int nums = tree.getAllChildren().size();
+        List<ParseTreeNode> children = tree.getAllChildren();
+        String ans = "";
+        NodeType type = tree.getNodeType();
+        if(tree.getNodeType().equals(NodeType.STR)) {
+            if(tree.getValue() == null) {
+                ans = children.get(0).getValue();
+            } else {
+                ans = tree.getValue();
+            }
+        } else if(type.equals(NodeType.STR_LITERAL)) {
+            ans = children.get(1).getAllChildren().get(0).getValue();
+        }
+
+        else if(type.equals(NodeType.S_EXPR)) {
+            ParseTreeNode indicator = children.get(0);
+            if(indicator.getNodeType().equals(NodeType.ID)) {
+                ans = map.get(indicator.getValue()).getValue();
+            }
+            else if(indicator.getNodeType().equals(NodeType.STR_LITERAL) || indicator.getNodeType().equals(NodeType.STR)) {
+                ans = stringEval(indicator);
+            }
+            else if(children.get(0).getNodeType().equals(NodeType.CONCAT)) {
+                ParseTreeNode s_expr1 = children.get(2);
+                ParseTreeNode s_expr2 = children.get(4);
+                String s1 = stringEval(s_expr1);
+                String s2 = stringEval(s_expr2);
+                ans = s1.concat(s2);
+            }
+            else if(indicator.getNodeType().equals(NodeType.CHARAT)) {
+                ParseTreeNode s_expr = children.get(2);
+                ParseTreeNode i_expr = children.get(4);
+                String str = stringEval(s_expr);
+                String indexAsString = intEval(i_expr);
+                int index = Integer.parseInt(indexAsString);
+                ans = String.valueOf(str.charAt(index));
+            }
+            map.put(varName, new Variable(varName, "str", ans));
+        }
+        return ans;
     }
 
     public static String intEval(ParseTreeNode tree) {

@@ -20,12 +20,16 @@ public class JottRunner {
             String fileAsString = sb.toString();
             ArrayList<JottTokenizer.Token> TokenList;
             TokenList= JottTokenizer.JottTokenizer(fileAsString);
-            for (JottTokenizer.Token token: TokenList) {
-                System.out.println("Token Type: "+token.getType()+" Token Value: "+token.getValue());
-            }
+//            for (JottTokenizer.Token token: TokenList) {
+//                System.out.println("Token Type: "+token.getType()+" Token Value: "+token.getValue());
+//            }
 
             ParseTreeNode tree = JottParser.parseTokens(TokenList);
             List<String> out = JottEvaluation.JottEvaluation(tree);
+
+            for(String output: out) {
+                System.out.println(output);
+            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
