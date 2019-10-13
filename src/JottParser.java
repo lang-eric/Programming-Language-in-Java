@@ -115,7 +115,9 @@ public class JottParser {
             tokIndex++;
 
             if (tokIndex != tokenList.size() - 1) {
-                //TODO: error handling
+                System.out.println("Syntax error: Statement ends too soon at at line "+tokenList.get(tokIndex).line + ", character "+tokenList.get(tokIndex).character_count+
+                        "\n\""+tokenList.get(tokIndex).line_string+"\"");
+                System.exit(-1);
             }
 
             stmt.addChild(new ParseTreeNode(stmt, NodeType.END_STMT));

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class JottRunner {
-    static ArrayList<String> line_list;
+    public static ArrayList<String> line_list;
     public static void Jottrunner(String file_name) {
         try {
             InputStream is = new FileInputStream(file_name);

@@ -186,7 +186,6 @@ public class JottEvaluation {
         if (tree.getNodeType().equals(NodeType.INT) || tree.getNodeType().equals(NodeType.OP)) {
             return tree.getValue();
         }
-
         else if (tree.getNodeType().equals(NodeType.I_EXPR)) {
             if (nums != 0) {
                 if (nums == 1) {
@@ -194,20 +193,24 @@ public class JottEvaluation {
                     map.put(varName, new Variable(varName, "int", ans));
                     return children.get(0).getValue();
                 }
-
                 String left = intEval(children.get(0));
                 String op = intEval(children.get(1));
                 String right = intEval(children.get(2));
-
-                int d1 = Integer.parseInt(left);
-                int d2 = Integer.parseInt(right);
+                int d1 = 0;
+                int d2 = 0;
+                try {
+                    d1 = Integer.parseInt(left);
+                    d2 = Integer.parseInt(right);
+                } catch (NumberFormatException nfe) {
+                    System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, \"" +
+                            "LINE GOES HERE");
+                }
                 ans = arithmeticOp(d1, d2, op);
                 map.put(varName, new Variable(varName, "int", ans));
             }
             //TODO:ERROR
             return ans;
         }
-
         else {
             return map.get(tree.getValue()).getValue();
         }
