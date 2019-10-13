@@ -5,14 +5,16 @@ import java.util.List;
 import java.util.Scanner;
 
 public class JottRunner {
+    static ArrayList<String> line_list;
     public static void Jottrunner(String file_name) {
         try {
             InputStream is = new FileInputStream(file_name);
             BufferedReader buf = new BufferedReader(new InputStreamReader(is));
             String line = buf.readLine();
-
             StringBuilder sb = new StringBuilder();
+            line_list=new ArrayList<>();
             while(line != null){
+                line_list.add(line);
                 sb.append(line);
                 sb.append('\n');
                 line = buf.readLine();

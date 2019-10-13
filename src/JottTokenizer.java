@@ -38,7 +38,7 @@ public class JottTokenizer {
         String value;
         int character_count;
         int line;
-
+        String line_string;
         public String getType() {
             return type;
         }
@@ -47,7 +47,8 @@ public class JottTokenizer {
             return value;
         }
 
-        public Token(String type, String value, int character_count, int line){
+        public Token(String type, String value, int character_count, int line,String line_string){
+            this.line_string=line_string;
             this.type=type;
             this.character_count=character_count;
             this.line=line;
@@ -82,8 +83,8 @@ public class JottTokenizer {
         int line_number=1;
         int character_count=0;
         for (int count=0;count<length;count++) {
-            //System.out.println(line_number);
             if(length>count+2&&character_count==0){
+                //Catches commented line
                 if(input[count]=='/'&&input[count+1]=='/'){
                     while(input[count]!='\n'){
                         count++;
@@ -97,70 +98,82 @@ public class JottTokenizer {
             }
             number_type=0;
             character_count++;
+            //Catches newline
             if (input[count]=='\n'){
                 line_number++;
                 character_count=0;
                 continue;
             }
+            //Catches a whitespace
             if (input[count]== ' '){
                 continue;
             }
+            //Catches a plus
             if (input[count] == '+') {
-                Tokens.add(new Token("plus","+",character_count,line_number));
+                Tokens.add(new Token("plus","+",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches a minus
             else if (input[count] == '-') {
-                Tokens.add(new Token("minus","-",character_count,line_number));
+                Tokens.add(new Token("minus","-",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches a multiply
             else if (input[count] == '*') {
-                Tokens.add(new Token("mult","*",character_count,line_number));
+                Tokens.add(new Token("mult","*",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches a divide
             else if (input[count] == '/') {
-                Tokens.add(new Token("divide","/",character_count,line_number));
+                Tokens.add(new Token("divide","/",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches a power
             else if (input[count] == '^') {
-                Tokens.add(new Token("power","^",character_count,line_number));
+                Tokens.add(new Token("power","^",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches an end parenthesis
             else if (input[count] == ')') {
-                Tokens.add(new Token("end_paren",")",character_count,line_number));
+                Tokens.add(new Token("end_paren",")",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches an start parenthesis
             else if (input[count] == '(') {
-                Tokens.add(new Token("start_paren","(",character_count,line_number));
+                Tokens.add(new Token("start_paren","(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches an end of a statement
             else if (input[count] == ';') {
-                Tokens.add(new Token("end_stmt",";",character_count,line_number));
+                Tokens.add(new Token("end_stmt",";",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches an assign
             else if (input[count] == '=') {
-                Tokens.add(new Token("assign","=",character_count,line_number));
+                Tokens.add(new Token("assign","=",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches a comma
             else if (input[count] == ',') {
-                Tokens.add(new Token("comma", ",",character_count,line_number));
+                Tokens.add(new Token("comma", ",",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
             String inputString = new String(input); //convert the char[] into a string, for readable comparison's sake.
             if(count+5<length) {
                 if (inputString.toString().substring(count, count+6).equals("String")){
-                    Tokens.add(new Token("type_String","String",character_count,line_number));
+                    Tokens.add(new Token("type_String","String",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
                     character_count+=5;
                     continue;
                 }
                 else if (inputString.toString().substring(count, count+6).equals("Double")){
-                    Tokens.add(new Token("type_Double","Double",character_count,line_number));
+                    Tokens.add(new Token("type_Double","Double",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
                     character_count+=5;
                     continue;
                 }
                 else if (inputString.substring(count, count+6).equals("print(")) {
-                    Tokens.add(new Token("print","print(",character_count,line_number));
+                    Tokens.add(new Token("print","print(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
                     character_count+=5;
                     continue;
@@ -168,19 +181,24 @@ public class JottTokenizer {
             }
             if(count+6<length) {
                 if (inputString.substring(count, count+7).equals("Integer")) {
-                    Tokens.add(new Token("type_Integer","Integer",character_count,line_number));
+                    Tokens.add(new Token("type_Integer","Integer",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=6;
                     character_count+=6;
                     continue;
                 }
-                else if (inputString.substring(count, count+7).equals("concat(")) {
-                    Tokens.add(new Token("concat","concat(",character_count,line_number));
+            }
+
+            if(count+7<length) {
+                //Catches a concat statement
+                if (inputString.substring(count, count+7).equals("concat(")) {
+                    Tokens.add(new Token("concat","concat(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=6;
                     character_count+=6;
                     continue;
                 }
+                //Catches a charAt statement
                 else if (inputString.substring(count, count+7).equals("charAt(")) {
-                    Tokens.add(new Token("charAt","charAt(",character_count,line_number));
+                    Tokens.add(new Token("charAt","charAt(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=6;
                     character_count+=6;
                     continue;
@@ -191,8 +209,9 @@ public class JottTokenizer {
                 end=1;
                 if(input[count]=='.') {
                     if(number_type==1) {
-                        System.out.println(("Syntax error: two '.'s in a row " +
-                                "does not make a number at "+line_number + ", character "+character_count));
+                        System.out.println("Syntax error: Two '.'s in a row " +
+                                "does not make a number at "+line_number + ", character "+character_count+
+                        "\n\""+JottRunner.line_list.get(line_number-1)+"\"");
                         System.exit(-1);
                         break;
                     }
@@ -206,20 +225,20 @@ public class JottTokenizer {
                         line_number++;
                         character_count=0;
                         if(number_type==1) {
-                            Tokens.add(new Token("double",temp.toString(),character_count,line_number));
+                            Tokens.add(new Token("double",temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                         }
                         else {
-                            Tokens.add(new Token("integer", temp.toString(),character_count,line_number));
+                            Tokens.add(new Token("integer", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                         }
                         break;
                     }
                 }
                 if(count==length) {
                     if(number_type==1) {
-                        Tokens.add(new Token("double",temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("double",temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     }
                     else {
-                        Tokens.add(new Token("integer", temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("integer", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     }
                     temp.removeAll(temp);
                     break;
@@ -227,10 +246,10 @@ public class JottTokenizer {
                 if(!(Character.isDigit(input[count])) && !(input[count]=='.')) {
 
                     if(number_type==1) {
-                        Tokens.add(new Token("double",temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("double",temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     }
                     else {
-                        Tokens.add(new Token("integer", temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("integer", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     }
                     temp.removeAll(temp);
                     count--;
@@ -241,6 +260,7 @@ public class JottTokenizer {
                 end=0;
                 continue;
             }
+            //Catches lowercase keywords
             if (Character.isLowerCase(input[count] )) {
                 while(Character.isLowerCase(input[count] )||
                         Character.isUpperCase(input[count] )
@@ -252,13 +272,13 @@ public class JottTokenizer {
                         if (input[count]=='\n'){
                             line_number++;
                             character_count=0;
-                            Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number));
+                            Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                             temp.removeAll(temp);
                             break;
                         }
                     }
                     if(count==length) {
-                        Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                         temp.removeAll(temp);
                         count--;
                         break;
@@ -266,7 +286,7 @@ public class JottTokenizer {
                     if(!(Character.isLowerCase(input[count]))&&
                             !((Character.isUpperCase(input[count]))
                                     &&!(Character.isDigit(input[count])))){
-                        Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("lower_keyword", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                         temp.removeAll(temp);
                         count--;
                         break;
@@ -274,6 +294,7 @@ public class JottTokenizer {
                 }
                 continue;
             }
+            //Catches uppercase keywords
             if (Character.isUpperCase(input[count])) {
                 while(Character.isLowerCase(input[count])||
                         (Character.isUpperCase(input[count])
@@ -285,13 +306,13 @@ public class JottTokenizer {
                         if (input[count]=='\n'){
                             line_number++;
                             character_count=0;
-                            Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number));
+                            Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                             temp.removeAll(temp);
                             break;
                         }
                     }
                     if(count==length) {
-                        Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                         temp.removeAll(temp);
                         count--;
                         break;
@@ -299,7 +320,7 @@ public class JottTokenizer {
                     if(!(Character.isLowerCase(input[count])&&
                             !(Character.isUpperCase(input[count]))
                             &&!(Character.isDigit(input[count])))){
-                        Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number));
+                        Tokens.add(new Token("upper_keyword", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                         temp.removeAll(temp);
                         count--;
                         break;
@@ -307,7 +328,7 @@ public class JottTokenizer {
                 }
                 continue;
             }
-
+            //Catches strings
             while (input[count] == '"') {
                 count++;
                 character_count++;
@@ -331,18 +352,20 @@ public class JottTokenizer {
                         }
                     }
                     if(count==length){
-                        System.out.println(("Syntax error: missing '\"' at line "+line_number + ", character "+character_count));
+                        System.out.println("Syntax error: Missing '\"' at line "+line_number + ", character "+character_count+
+                                "\n\""+JottRunner.line_list.get(line_number-1)+"\"");
                         System.exit(-1);
                     }
                 }
                 if(input[count]=='"'){
-                    Tokens.add(new Token("string", temp.toString(),character_count,line_number));
+                    Tokens.add(new Token("string", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     temp.removeAll(temp);
                     end=1;
                     break;
                 }
                 else{
-                    System.out.println(("Syntax error: missing '\"' at line "+line_number + ", character "+character_count));
+                    System.out.println("Syntax error: Missing '\"' at line "+line_number + ", character "+character_count+
+                            "\n\""+JottRunner.line_list.get(line_number-1)+"\"");
                     System.exit(-1);
                 }
             }
@@ -350,8 +373,9 @@ public class JottTokenizer {
                 end=0;
                 continue;
             }
-            System.out.println(("Syntax error: Can not identitfy "+input[count]+
-                    " at line "+line_number + ", character "+character_count));
+            System.out.println("Syntax error: Can not identitfy "+input[count]+
+                    " at line "+line_number + ", character "+character_count+
+                    "\n\""+JottRunner.line_list.get(line_number-1)+"\"");
             System.exit(-1);
         }
 //        for(int i = 0; i< Tokens.size(); i++){
