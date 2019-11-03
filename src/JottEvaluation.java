@@ -202,8 +202,6 @@ public class JottEvaluation {
                     d1 = Integer.parseInt(left);
                     d2 = Integer.parseInt(right);
                 } catch (NumberFormatException nfe) {
-                    System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, \"" +
-                            "LINE GOES HERE");
                 }
                 ans = arithmeticOp(d1, d2, op);
                 map.put(varName, new Variable(varName, "int", ans));

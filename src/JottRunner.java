@@ -22,9 +22,9 @@ public class JottRunner {
             String fileAsString = sb.toString();
             ArrayList<JottTokenizer.Token> TokenList;
             TokenList= JottTokenizer.JottTokenizer(fileAsString);
-//            for (JottTokenizer.Token token: TokenList) {
-//                System.out.println("Token Type: "+token.getType()+" Token Value: "+token.getValue());
-//            }
+            for (JottTokenizer.Token token: TokenList) {
+                System.out.println("Token Type: "+token.getType()+" Token Value: "+token.getValue());
+            }
 
             ParseTreeNode tree = JottParser.parseTokens(TokenList, file_name);
             List<String> output = JottEvaluation.JottEvaluation(tree);

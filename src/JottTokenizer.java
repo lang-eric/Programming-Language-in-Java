@@ -53,7 +53,10 @@ public class JottTokenizer {
             this.character_count=character_count;
             this.line=line;
             int count=0;
-            if(value.charAt(0)=='[') {
+            if(value.length()==2){
+                this.value="";
+            }
+            else if(value.charAt(0)=='[') {
                 StringBuilder builder = new StringBuilder(value.length());
                 for (Character ch : value.toCharArray()) {
                     if (count % 3 == 1) {
@@ -84,6 +87,12 @@ public class JottTokenizer {
         int character_count=0;
         for (int count=0;count<length;count++) {
             if(length>count+2&&character_count==0){
+                while(input[count]==' '){
+                    count++;
+                    if(count==length+1){
+                        return Tokens;
+                    }
+                }
                 //Catches commented line
                 if(input[count]=='/'&&input[count+1]=='/'){
                     while(input[count]!='\n'){
@@ -163,19 +172,19 @@ public class JottTokenizer {
                 if (inputString.toString().substring(count, count+6).equals("String")){
                     Tokens.add(new Token("type_String","String",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
-                    character_count+=5;
+                    character_count+=4;
                     continue;
                 }
                 else if (inputString.toString().substring(count, count+6).equals("Double")){
                     Tokens.add(new Token("type_Double","Double",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
-                    character_count+=5;
+                    character_count+=4;
                     continue;
                 }
                 else if (inputString.substring(count, count+6).equals("print(")) {
                     Tokens.add(new Token("print","print(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
-                    character_count+=5;
+                    character_count+=4;
                     continue;
                 }
             }
@@ -183,7 +192,7 @@ public class JottTokenizer {
                 if (inputString.substring(count, count+7).equals("Integer")) {
                     Tokens.add(new Token("type_Integer","Integer",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=6;
-                    character_count+=6;
+                    character_count+=5;
                     continue;
                 }
             }
@@ -193,14 +202,14 @@ public class JottTokenizer {
                 if (inputString.substring(count, count+7).equals("concat(")) {
                     Tokens.add(new Token("concat","concat(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=6;
-                    character_count+=6;
+                    character_count+=5;
                     continue;
                 }
                 //Catches a charAt statement
                 else if (inputString.substring(count, count+7).equals("charAt(")) {
                     Tokens.add(new Token("charAt","charAt(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=6;
-                    character_count+=6;
+                    character_count+=5;
                     continue;
                 }
             }
