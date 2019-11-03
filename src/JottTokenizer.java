@@ -20,14 +20,13 @@
  * A set of letters, numbers, and spaces surrounded by quoation marks ('"') - string
  *
  * New to phase 2:
- * '<' - less
  * '<=' - less_eq
- * '>'- greater
  * '>=' - greater_eq
  * '==' - eq
  * '!=' - not_eq
- * 'if(' if
- *
+ * 'if(' - if
+ * '{' - start_blk
+ * '}' - end_blk
  *
  * Author: Justin Kolodny
  */
@@ -125,6 +124,16 @@ public class JottTokenizer {
             }
             //Catches a whitespace
             if (input[count]== ' '){
+                continue;
+            }
+            //Catches a 'start_blk'
+            if(input [count]=='{'){
+                Tokens.add(new Token("start_blk","{",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                continue;
+            }
+            //Catches a 'end_blk'
+            if(input [count]=='}'){
+                Tokens.add(new Token("end_blk","}",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
             //Catches a plus
