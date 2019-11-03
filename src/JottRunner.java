@@ -27,17 +27,17 @@ public class JottRunner {
 //            }
 
             ParseTreeNode tree = JottParser.parseTokens(TokenList, file_name);
-            List<String> out = JottEvaluation.JottEvaluation(tree);
-            PrintStream output = new PrintStream(new FileOutputStream(file_name.substring(0, file_name.length() - 1) + "out", true));
-            for (String s : out) {
-                output.println(s);
-            }
-            output.close();
-
-
-//            for(String out: output) {
-//                System.out.println(out);
+            List<String> output = JottEvaluation.JottEvaluation(tree);
+            //PrintStream output = new PrintStream(new FileOutputStream(file_name.substring(0, file_name.length() - 1) + "out", true));
+//            for (String s : out) {
+//                output.println(s);
 //            }
+//            output.close();
+
+
+            for(String out: output) {
+                System.out.println(out);
+            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
