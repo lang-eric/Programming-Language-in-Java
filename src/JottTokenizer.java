@@ -19,6 +19,16 @@
  * A set of letters and numbers that begins with a lowercase letter- lower_keyword
  * A set of letters, numbers, and spaces surrounded by quoation marks ('"') - string
  *
+ * New to phase 2:
+ * '<' - less
+ * '<=' - less_eq
+ * '>'- greater
+ * '>=' - greater_eq
+ * '==' - eq
+ * '!=' - not_eq
+ * 'if(' if
+ *
+ *
  * Author: Justin Kolodny
  */
 
@@ -53,7 +63,7 @@ public class JottTokenizer {
             this.character_count=character_count;
             this.line=line;
             int count=0;
-            if(value.length()==2){
+            if(value.length()==2&&value.charAt(0)=='['){
                 this.value="";
             }
             else if(value.charAt(0)=='[') {
@@ -157,25 +167,108 @@ public class JottTokenizer {
                 Tokens.add(new Token("end_stmt",";",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+
+            else if (input[count]=='!'){
+                count++;
+                character_count++;
+                if (count == length) {
+                    System.out.println("Syntax error: '!' is not a valid operator, you must make it " +
+                            "'!='. At " + line_number + ", character " + (character_count + 1) +
+                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+                    System.exit(-1);
+                }
+                else if (input[count] == '='){
+                    Tokens.add(new Token("not_eq", "!=", character_count, line_number, JottRunner.line_list.get(line_number - 1)));
+                    continue;
+                }
+                else{
+                    System.out.println("Syntax error: '!' is not a valid operator, you must make it " +
+                            "'!='. At " + line_number + ", character " + (character_count + 1) +
+                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+                    System.exit(-1);
+                }
+            }
+
             //Catches an assign
             else if (input[count] == '=') {
-                Tokens.add(new Token("assign","=",character_count,line_number, JottRunner.line_list.get(line_number-1)));
-                continue;
+                if (count+1 == length) {
+                    return Tokens;
+                }
+                else if(input[count+1]=='='){
+                    Tokens.add(new Token("eq","==",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                    count++;
+                    character_count++;
+                    continue;
+                }
+                else {
+                    Tokens.add(new Token("assign", "=", character_count, line_number, JottRunner.line_list.get(line_number - 1)));
+                    continue;
+                }
             }
             //Catches a comma
             else if (input[count] == ',') {
                 Tokens.add(new Token("comma", ",",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
+            //Catches a <=
+            else if (input[count] == '<') {
+                count++;
+                character_count++;
+                if (count == length) {
+                    System.out.println("Syntax error: '<' is not a valid operator, you must make it " +
+                            "'<='. At " + line_number + ", character " + (character_count + 1) +
+                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+                    System.exit(-1);
+                }
+                else if (input[count] == '='){
+                    Tokens.add(new Token("less_eq", "<=", character_count, line_number, JottRunner.line_list.get(line_number - 1)));
+                    continue;
+                }
+                else{
+                    System.out.println("Syntax error: '<' is not a valid operator, you must make it " +
+                            "'<='. At " + line_number + ", character " + (character_count + 1) +
+                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+                    System.exit(-1);
+                }
+            }
+            //Catches a >=
+            else if (input[count] == '>') {
+                count++;
+                character_count++;
+                if (count == length) {
+                    System.out.println("Syntax error: '>' is not a valid operator, you must make it " +
+                            "'>='. At " + line_number + ", character " + (character_count + 1) +
+                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+                    System.exit(-1);
+                }
+                else if (input[count] == '='){
+                    Tokens.add(new Token("greater_eq", ">=", character_count, line_number, JottRunner.line_list.get(line_number - 1)));
+                    continue;
+                }
+                else{
+                    System.out.println("Syntax error: '>' is not a valid operator, you must make it " +
+                            "'>='. At " + line_number + ", character " + (character_count + 1) +
+                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+                    System.exit(-1);
+                }
+            }
             String inputString = new String(input); //convert the char[] into a string, for readable comparison's sake.
+            if(count+2<length){
+                if(inputString.substring(count,count+3).equals("if(")){
+                    Tokens.add(new Token("if","if(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                    count+=2;
+                    character_count+=1;
+                    continue;
+                }
+            }
             if(count+5<length) {
-                if (inputString.toString().substring(count, count+6).equals("String")){
+                if (inputString.substring(count, count+6).equals("String")){
                     Tokens.add(new Token("type_String","String",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
                     character_count+=4;
                     continue;
                 }
-                else if (inputString.toString().substring(count, count+6).equals("Double")){
+                else if (inputString.substring(count, count+6).equals("Double")){
                     Tokens.add(new Token("type_Double","Double",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
                     character_count+=4;
