@@ -1,24 +1,46 @@
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ParseTreeNode {
+
 	private ParseTreeNode parent;
 	private String token;
 	private List<ParseTreeNode> children;
 	private NodeType type;
+	private String value;
 
-	enum NodeType {
-		PROGRAM, STMT_LIST, STMT, END_STMT, EXPR, START_PAREN, END_PAREN,
-		CHAR, L_CHAR, U_CHAR, DIGIT, SIGN, ID, PRINT, ASMT, OP,
-		DBL, DBL_EXPR, INT, I_EXPR, STR_LITERAL, STR, STR_EXPR
-	}
 
-	public ParseTreeNode(ParseTreeNode parent) {
+//	private ParseTreeNode(ParseTreeNode parent, NodeType program) {
+//		this.parent = parent;
+//		this.children = new ArrayList<ParseTreeNode>();
+//	}
+
+	/**
+	 * Leaf node constructor
+	 * @param parent
+	 * @param value
+	 */
+	public ParseTreeNode(ParseTreeNode parent, NodeType type, String value){
 		this.parent = parent;
+		this.type = type;
+		this.children = new ArrayList<>();
+		this.value = value;
 	}
 
 	public ParseTreeNode(ParseTreeNode parent, NodeType type) {
-		this(parent);
+		this.parent = parent;
 		this.type = type;
+		this.children = new ArrayList<>();
+		this.value = null;
+	}
+
+	public ParseTreeNode getRootNode() {
+		if(this.parent == null) {
+			return this;
+		} else {
+			return this.getParent().getRootNode();
+		}
 	}
 
 	/**
@@ -33,5 +55,60 @@ public class ParseTreeNode {
 		children.add(child);
 	}
 
+	public ParseTreeNode getChild(NodeType type) {
+		for(ParseTreeNode child: this.children) {
+			if(child.type.equals(type))
+				return child;
+		}
+		return null;
+	}
 
+	public List<ParseTreeNode> getAllChildren(){
+		return children;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {this.value = value; }
+
+	public ParseTreeNode getParent() { return this.parent; }
+
+	public void setParent(ParseTreeNode parent) {this.parent = parent; }
+
+	public NodeType getNodeType() { return this.type; }
+
+	public void setToken(String term) { this.token = term; }
+
+	public void removeChild(int idx) {
+		if (idx >= children.size() || idx < 0) {
+			System.out.println("Error");
+		}
+		else {
+			children.remove(idx);
+		}
+	}
+
+	public void removeAllChild() {
+		children = new ArrayList<>();
+	}
+
+	/**
+	 * Tests if the node instance is a leaf node or not.
+	 * @return true if this node's children list is empty; false otherwise
+	 */
+	public boolean isLeafNode() {
+		return this.children.isEmpty();
+	}
+
+	@Override
+	public String toString() {
+		if(this.value == null) {
+			return this.type.toString();
+		}
+		else {
+			return this.value;
+		}
+	}
 }
