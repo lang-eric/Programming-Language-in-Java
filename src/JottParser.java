@@ -50,8 +50,6 @@ public class JottParser {
         root.addChild(stmtList);
         root.addChild(new ParseTreeNode(root, NodeType.$$));
 
-
-//        traverseTree(root, 0);
         return root;
     }
 
@@ -84,7 +82,7 @@ public class JottParser {
             stmt.addChild(prt);
         }
 
-        else if (type.equals(NodeType.END_STMT)) {
+        else if (type.equals("end_stmt")) {
             tokIndex ++;
             if (tokIndex < tokenList.size()) {
                 expandStmt(tokenList, stmt);
@@ -113,7 +111,6 @@ public class JottParser {
             ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.EXPR);
             expandExpr(tokenList, prt);
             stmt.addChild(prt);
-            tokIndex++;
 
             /*if (tokIndex != tokenList.size() - 1) {
                 System.out.println("Syntax error: Statement ends too soon at at line " + tokenList.get(tokIndex).line +
@@ -122,7 +119,14 @@ public class JottParser {
                 System.exit(-1);
             }*/
 
+            if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+                System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
+                System.out.print("expandSTMT");
+                System.exit(-1);
+            }
             stmt.addChild(new ParseTreeNode(stmt, NodeType.END_STMT));
+            tokIndex++;
         }
 
     }
@@ -141,8 +145,8 @@ public class JottParser {
 
             tokIndex++;
             if (!tokenList.get(tokIndex).getType().equals("assign")) {
-                System.out.println("Syntax Error: expected = got " + tokenList.get(tokIndex).getValue() +
-                        ", \"" + tokenList.get(tokIndex).line_string + "\" (" + fileName + ":" +
+                System.out.println("Syntax Error: expected '=' got '" + tokenList.get(tokIndex).getValue() +
+                        "', \"" + tokenList.get(tokIndex).line_string + "\" (" + fileName + ":" +
                         tokenList.get(tokIndex).line + ")");
                 System.exit(-1);
             }
@@ -155,6 +159,12 @@ public class JottParser {
             expandDExpr(tokenList, child3);
             parent.addChild(child3);
 
+            if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+                System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex - 2).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex - 2).line + ") " + tokenList.get(tokIndex).getValue());
+                System.out.print("expandASMT: case DOUBLE");
+                System.exit(-1);
+            }
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex ++;
         }
@@ -186,6 +196,12 @@ public class JottParser {
             expandIExpr(tokenList, child3);
             parent.addChild(child3);
 
+            if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+                System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex - 2).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex - 2).line + ") " + tokenList.get(tokIndex).getValue());
+                System.out.print("expandASMT: case INTEGER");
+                System.exit(-1);
+            }
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex ++;
         }
@@ -216,6 +232,12 @@ public class JottParser {
             expandSExpr(tokenList, s_expr);
             parent.addChild(s_expr);
 
+            if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+                System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex - 1).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex - 1).line + ") " + tokenList.get(tokIndex - 1).getValue());
+                System.out.print("expandASMT: case STR");
+                System.exit(-1);
+            }
             parent.addChild(new ParseTreeNode(parent, NodeType.END_STMT));
             tokIndex += 1;
         }
@@ -279,7 +301,7 @@ public class JottParser {
                 NodeType type = map.get(tokenList.get(tokIndex).getValue());
                 if (type == null) {
                     JottTokenizer.Token tikToken = tokenList.get(tokIndex);
-                    System.out.println("Error: Missing type declaration in line \"" +
+                    System.out.println("Syntax Error: Missing type declaration in line \"" +
                             tikToken.line_string + "\" (" + fileName + ":" + tikToken.line + ")");
                     System.exit(-1);
                 }
@@ -417,9 +439,11 @@ public class JottParser {
             expandIExpr(tokenList, dexpr);
         }
 
-        else {
-            // TODO: Handle error
-//            System.out.println("Error read in");
+        else if(isDataType(tokenList.get(tokIndex))) {
+            System.out.println("Syntax Error: type mismatch, expected type Integer but found " + type + ", \""
+                    + tokenList.get(tokIndex).line_string + "\" (" + fileName + ":" + tokenList.get(tokIndex).line
+                    + ") " + tokenList.get(tokIndex).getValue());
+            System.exit(-1);
         }
 
     }
@@ -485,6 +509,11 @@ public class JottParser {
                 addEndParen(s_expr);
                 tokIndex += 1;
                 break;
+            default:
+                System.out.println("Syntax Error: type mismatch, expected type String but found " + sExprType + ", \""
+                        + tokenList.get(tokIndex).line_string + "\" (" + fileName + ":" + tokenList.get(tokIndex).line
+                        + ") " + tokenList.get(tokIndex).getValue());
+                System.exit(-1);
         }
     }
 
@@ -618,6 +647,13 @@ public class JottParser {
             tokIndex ++;
             expandDExpr(tokenList, dexpr);
         }
+
+        else if(isDataType(tokenList.get(tokIndex))){
+            System.out.println("Syntax Error: type mismatch, expected type Double but found " + type + ", \""
+                    + tokenList.get(tokIndex).line_string + "\" (" + fileName + ":" + tokenList.get(tokIndex).line
+                    + ") " + tokenList.get(tokIndex).getValue());
+            System.exit(-1);
+        }
     }
 
 
@@ -626,7 +662,7 @@ public class JottParser {
         String res = "";
         if (Character.isUpperCase(val.charAt(0))) {
             JottTokenizer.Token tikToken = tokenList.get(tokIndex);
-            System.out.println("Syntax Error: Id cannot begin with an uppercase letter, \"" +
+            System.out.println("Syntax Error: ID cannot begin with an uppercase letter, \"" +
                     tikToken.line_string + "\" (" + fileName + ":" + tikToken.line + ")");
             System.exit(-1);
         }
@@ -674,21 +710,36 @@ public class JottParser {
 
 
 
-    public static void expandPrint(List<JottTokenizer.Token> tokenList, ParseTreeNode print) {
-        ParseTreeNode child1 = new ParseTreeNode(print, NodeType.START_PAREN);
-        ParseTreeNode child2 = new ParseTreeNode(print, NodeType.EXPR);
-        ParseTreeNode child3 = new ParseTreeNode(print, NodeType.END_PAREN);
+    private static void expandPrint(List<JottTokenizer.Token> tokenList, ParseTreeNode printNode) {
+        ParseTreeNode child1 = new ParseTreeNode(printNode, NodeType.START_PAREN);
+        ParseTreeNode child2 = new ParseTreeNode(printNode, NodeType.EXPR);
+        ParseTreeNode child3 = new ParseTreeNode(printNode, NodeType.END_PAREN);
+        ParseTreeNode child4 = new ParseTreeNode(printNode, NodeType.END_STMT);
 
-        tokIndex ++;
+        tokIndex++;
         expandExpr(tokenList, child2);
-        print.addChild(child1);
-        print.addChild(child2);
-        print.addChild(child3);
+        printNode.addChild(child1);
+        printNode.addChild(child2);
+        if(child2.getChild(NodeType.ID) != null)
+            tokIndex++;
+        if(!(tokenList.get(tokIndex).getType().equals("end_paren"))) {
+            System.out.println("Syntax Error: missing closing parenthesis, \"" + tokenList.get(tokIndex - 1).line_string
+                    + "\" (" + fileName + ":" + tokenList.get(tokIndex - 1).line + ") " + tokenList.get(tokIndex).getValue());
+            System.exit(-1);
+        }
+        printNode.addChild(child3);
+        tokIndex++;
+        if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+            System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex - 1).line_string
+                    + "\" (" + fileName + ":" + tokenList.get(tokIndex - 1).line + ") " + tokenList.get(tokIndex).getValue());
+            System.exit(-1);
+        }
+        printNode.addChild(new ParseTreeNode(printNode, NodeType.END_STMT));
+        tokIndex++;
+    }
 
-        //TODO:ERROR HANDLING
-        tokIndex ++;
-        // TODO: ERROR
-        print.addChild(new ParseTreeNode(print, NodeType.END_STMT));
+    private static boolean isDataType(JottTokenizer.Token token) {
+        return token.getType().equals("integer") || token.getType().equals("double") || token.getType().equals("string");
     }
 
     public static void traverseTree(ParseTreeNode node, int depth) {
