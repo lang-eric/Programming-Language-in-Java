@@ -110,8 +110,6 @@ public class JottTokenizer {
                             return Tokens;
                         }
                     }
-                    line_number+=1;
-                    character_count=0;
                 }
             }
             number_type=0;
