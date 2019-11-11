@@ -20,6 +20,8 @@ public class JottParser {
      * '(' - start_paren
      * ')' - end_paren
      * '=' - assign
+     * '>' - greater
+     * '<' - less
      * 'String' - type_String
      * 'Integer' - type_Integer
      * 'Double' - type_Double
@@ -268,7 +270,10 @@ public class JottParser {
 
             if (tokenList.get(tokIndex + 1).getType().equals("plus") || tokenList.get(tokIndex + 1).getType().equals("mult") ||
                     tokenList.get(tokIndex + 1).getType().equals("minus") || tokenList.get(tokIndex + 1).getType().equals("divide") ||
-                    tokenList.get(tokIndex + 1).getType().equals("power")){
+                    tokenList.get(tokIndex + 1).getType().equals("power") || tokenList.get(tokIndex + 1).getType().equals("less") ||
+                    tokenList.get(tokIndex + 1).getType().equals("greater") || tokenList.get(tokIndex + 1).getType().equals("greater_eq") ||
+                    tokenList.get(tokIndex + 1).getType().equals("less_eq") || tokenList.get(tokIndex + 1).getType().equals("eq") ||
+                    tokenList.get(tokIndex + 1).getType().equals("not_eq")){
                 NodeType type = map.get(tokenList.get(tokIndex).getValue());
                 if (type.equals(NodeType.DOUBLE)) {
                     ptr = new ParseTreeNode(expr, NodeType.D_EXPR);
@@ -405,11 +410,19 @@ public class JottParser {
             expandIExpr(tokenList, dexpr);
         }
 
-        else if (type.equals("plus") || type.equals("divide") || type.equals("power") || type.equals("mult")) {
+        else if (type.equals("plus") || type.equals("divide") || type.equals("power") || type.equals("mult") ||
+                type.equals("greater") || type.equals("less") || type.equals("greater_eq") || type.equals("less_eq") ||
+                type.equals("eq") || type.equals("not_eq")) {
             ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP, "+");
             if (type.equals("divide")) op = new ParseTreeNode(dexpr, NodeType.OP, "/");
             if (type.equals("mult")) op = new ParseTreeNode(dexpr, NodeType.OP, "*");
             if (type.equals("power")) op = new ParseTreeNode(dexpr, NodeType.OP, "^");
+            if (type.equals("greater")) op = new ParseTreeNode(dexpr, NodeType.OP, ">");
+            if (type.equals("less")) op = new ParseTreeNode(dexpr, NodeType.OP, "<");
+            if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "!=");
+            if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, ">=");
+            if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
+            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
 
 
             if (children.size() > 1) {
@@ -614,12 +627,19 @@ public class JottParser {
             expandDExpr(tokenList, dexpr);
         }
 
-        else if (type.equals("plus") || type.equals("divide")  || type.equals("power") || type.equals("mult")) {
+        else if (type.equals("plus") || type.equals("divide")  || type.equals("power") || type.equals("mult") ||
+                type.equals("greater") || type.equals("less") || type.equals("greater_eq") || type.equals("less_eq") ||
+                type.equals("eq") || type.equals("not_eq")) {
             ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP, "+");
             if (type.equals("divide")) op = new ParseTreeNode(dexpr, NodeType.OP, "/");
             if (type.equals("mult")) op = new ParseTreeNode(dexpr, NodeType.OP, "*");
             if (type.equals("power")) op = new ParseTreeNode(dexpr, NodeType.OP, "^");
-
+            if (type.equals("greater")) op = new ParseTreeNode(dexpr, NodeType.OP, ">");
+            if (type.equals("less")) op = new ParseTreeNode(dexpr, NodeType.OP, "<");
+            if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "!=");
+            if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, ">=");
+            if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
+            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
 
             if (children.size() > 1) {
                 if (children.size() == 3) {
@@ -687,7 +707,11 @@ public class JottParser {
             if (tokenList.get(tokIndex - 2).getType().equals("plus") || tokenList.get(tokIndex - 2).getType().equals("minus") ||
                     tokenList.get(tokIndex - 2).getType().equals("mult") || tokenList.get(tokIndex - 2).getType().equals("divide") ||
                     tokenList.get(tokIndex - 2).getType().equals("power") || tokenList.get(tokIndex - 2).getType().equals("start_paren") ||
-                    tokenList.get(tokIndex - 2).getType().equals("print")) {
+                    tokenList.get(tokIndex - 2).getType().equals("print") || tokenList.get(tokIndex - 2).getType().equals("greater") ||
+                    tokenList.get(tokIndex - 2).getType().equals("greater_eq") || tokenList.get(tokIndex - 2).getType().equals("less") ||
+                    tokenList.get(tokIndex - 2).getType().equals("less_eq") || tokenList.get(tokIndex - 2).getType().equals("not_eq") ||
+                    tokenList.get(tokIndex - 2).getType().equals("eq") ) {
+
                 newSign = "-";
             }
             else {
@@ -753,4 +777,6 @@ public class JottParser {
             }
         }
     }
+
+
 }

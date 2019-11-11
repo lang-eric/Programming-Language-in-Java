@@ -232,10 +232,12 @@ public class JottTokenizer {
                     continue;
                 }
                 else{
-                    System.out.println("Syntax error: '<' is not a valid operator, you must make it " +
-                            "'<='. At " + line_number + ", character " + (character_count + 1) +
-                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
-                    System.exit(-1);
+                    Tokens.add(new Token("less","<",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                    continue;
+//                    System.out.println("Syntax error: '<' is not a valid operator, you must make it " +
+//                            "'<='. At " + line_number + ", character " + (character_count + 1) +
+//                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+//                    System.exit(-1);
                 }
             }
             //Catches a >=
@@ -253,10 +255,12 @@ public class JottTokenizer {
                     continue;
                 }
                 else{
-                    System.out.println("Syntax error: '>' is not a valid operator, you must make it " +
-                            "'>='. At " + line_number + ", character " + (character_count + 1) +
-                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
-                    System.exit(-1);
+                    Tokens.add(new Token("greater",">",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                    continue;
+//                    System.out.println("Syntax error: '>' is not a valid operator, you must make it " +
+//                            "'>='. At " + line_number + ", character " + (character_count + 1) +
+//                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
+//                    System.exit(-1);
                 }
             }
             String inputString = new String(input); //convert the char[] into a string, for readable comparison's sake.
@@ -482,7 +486,7 @@ public class JottTokenizer {
                 end=0;
                 continue;
             }
-            System.out.println("Syntax error: Can not identitfy "+input[count]+
+            System.out.println("Syntax error: Can not identify "+input[count]+
                     " at line "+line_number + ", character "+character_count+
                     "\n\""+JottRunner.line_list.get(line_number-1)+"\"");
             System.exit(-1);

@@ -22,6 +22,17 @@ public class JottEvaluation {
         int ans = 0;
         double ans_double = 0;
 
+        if (obj1 instanceof Integer && !(obj2 instanceof Integer)) {
+            System.out.println("Syntax Error: Type mismatch: Expected Integer got Double ");
+            System.exit(-1);
+        }
+
+        if (obj1 instanceof Double && !(obj2 instanceof Double)) {
+            System.out.println("Syntax Error: Type mismatch: Expected Double got Integer ");
+            System.exit(-1);
+        }
+        //Syntax Error: Type mismatch: Expected Integer got Double, "print( x + y );" (inputs/prog3.j:4)
+
         if (op.equals("+")) {
             if (obj1 instanceof Integer) {
                 ans = (int) obj1 + (int) obj2;
@@ -67,7 +78,7 @@ public class JottEvaluation {
                     return String.valueOf(ans);
 
                 } catch (Exception e) {
-                    System.out.println("Runtime Error: Cannot divide by zero!");
+                    System.out.println("Runtime Error: Divide by zero, ");
                     System.exit(-1);
                 }
                 return String.valueOf(ans_double);
@@ -82,6 +93,81 @@ public class JottEvaluation {
             }
         }
     }
+
+    public static String booleanOp(Object obj1, Object obj2, String op) {
+        if (obj1 instanceof Integer && !(obj2 instanceof Integer) ||
+                obj1 instanceof Double && !(obj2 instanceof Double)) {
+            System.out.println("Error: Comparison of different type of object");
+            System.exit(-1);
+        }
+
+        if (op.equals(">")) {
+            if (obj1 instanceof Integer) {
+                if ((int) obj1 > (int) obj2) return "1";
+                return "0";
+            }
+            else {
+                if ((double) obj1 > (double) obj2) return "1";
+                return "0";
+            }
+        }
+
+        else if (op.equals(">=")) {
+            if (obj1 instanceof Integer) {
+                if ((int) obj1 >=(int) obj2) return "1";
+                return "0";
+            }
+            else {
+                if ((double) obj1 >= (double) obj2) return "1";
+                return "0";
+            }
+        }
+
+        else if (op.equals("<")) {
+            if (obj1 instanceof Integer) {
+                if ((int) obj1 < (int) obj2) return "1";
+                return "0";
+            }
+            else {
+                if ((double) obj1 < (double) obj2) return "1";
+                return "0";
+            }
+        }
+
+        else if (op.equals("<=")) {
+            if (obj1 instanceof Integer) {
+                if ((int) obj1 <= (int) obj2) return "1";
+                return "0";
+            }
+            else {
+                if ((double) obj1 <= (double) obj2) return "1";
+                return "0";
+            }
+        }
+
+        else if (op.equals("==")) {
+            if (obj1 instanceof Integer) {
+                if ((int) obj1 == (int) obj2) return "1";
+                return "0";
+            }
+            else {
+                if ((double) obj1 == (double) obj2) return "1";
+                return "0";
+            }
+        }
+
+        else {
+            if (obj1 instanceof Integer) {
+                if ((int) obj1 != (int) obj2) return "1";
+                return "0";
+            }
+            else {
+                if ((double) obj1 != (double) obj2) return "1";
+                return "0";
+            }
+        }
+    }
+
 
     public static void stmtEval(ParseTreeNode tree){
         List<ParseTreeNode> children = tree.getAllChildren();
@@ -203,13 +289,25 @@ public class JottEvaluation {
                     d2 = Integer.parseInt(right);
                 } catch (NumberFormatException nfe) {
                 }
-                ans = arithmeticOp(d1, d2, op);
+                if (op.equals("<") || op.equals("<=") || op.equals(">") || op.equals(">=") ||
+                    op.equals("==") || op.equals("!=")) {
+                    ans = booleanOp(d1, d2, op);
+                }
+
+                if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
+                    ans = arithmeticOp(d1, d2, op);
+                }
+
                 map.put(varName, new Variable(varName, "int", ans));
             }
             //TODO:ERROR
             return ans;
         }
         else {
+            if (map.get(tree.getValue()).getType().equals("double")) {
+                System.out.println("Syntax Error: Type mismatch: Expected Integer got Double");
+                System.exit(-1);
+            }
             return map.get(tree.getValue()).getValue();
         }
     }
@@ -267,7 +365,16 @@ public class JottEvaluation {
 
                 Double d1 = Double.parseDouble(left);
                 Double d2 = Double.parseDouble(right);
-                ans = arithmeticOp(d1, d2, op);
+
+                if (op.equals("<") || op.equals("<=") || op.equals(">") || op.equals(">=") ||
+                        op.equals("==") || op.equals("!=")) {
+                    ans = booleanOp(d1, d2, op);
+                }
+
+                if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
+                    ans = arithmeticOp(d1, d2, op);
+                }
+
                 map.put(varName, new Variable(varName, "double", ans));
             }
             //TODO:ERROR
@@ -275,6 +382,10 @@ public class JottEvaluation {
         }
 
         else {
+            if (map.get(tree.getValue()).getType().equals("int")) {
+                System.out.println("Syntax Error: Type mismatch: Expected Double got Integer");
+                System.exit(-1);
+            }
             return map.get(tree.getValue()).getValue();
         }
     }
