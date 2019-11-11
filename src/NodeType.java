@@ -49,7 +49,11 @@ enum NodeType {
         FOR,
         WHILE,
         IF,
-        ELSE
+        ELSE,
+        B_STMT_LIST,
+        B_STMT,
+        ASSIGN,
+        RASMT
 
 
 }
