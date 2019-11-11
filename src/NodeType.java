@@ -39,6 +39,17 @@ enum NodeType {
         $$,
         EPSILON,
         INTEGER,
-        STRING
+        STRING,
+        LST,
+        LSET,
+        GT,
+        GTET,
+        EQUAL,
+        NOTEQUAL,
+        FOR,
+        WHILE,
+        IF,
+        ELSE
+
 
 }
