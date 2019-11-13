@@ -60,13 +60,13 @@ public class ParseTreeNode {
 		children.add(child);
 	}
 
-	public ParseTreeNode getChild(NodeType type) {
-		for(ParseTreeNode child: this.children) {
-			if(child.type.equals(type))
-				return child;
-		}
-		return null;
-	}
+//	public ParseTreeNode getChild(NodeType type) {
+//		for(ParseTreeNode child: this.children) {
+//			if(child.type.equals(type))
+//				return child;
+//		}
+//		return null;
+//	}
 
 	public List<ParseTreeNode> getAllChildren(){
 		return children;

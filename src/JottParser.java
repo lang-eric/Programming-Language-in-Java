@@ -86,14 +86,14 @@ public class JottParser {
             stmt.addChild(prt);
         }
 
-        else if (type.equals(NodeType.END_STMT)) {
+
+        else if (type.equals("end_stmt") || type.equals("end_paren")) {
             tokIndex ++;
             if (tokIndex < tokenList.size()) {
                 expandStmt(tokenList, stmt);
             }
         }
 
-        //phase 2:
         else if (type.equals("if")) {
             expandIf(tokenList, stmt);
         }
@@ -114,6 +114,19 @@ public class JottParser {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
             expandASMT(tokenList, asmt, NodeType.STR);
             stmt.addChild(asmt);
+        }
+
+        else if (type.equals("lower_keyword")) {
+            ParseTreeNode expr = new ParseTreeNode(stmt, NodeType.EXPR);
+            if (tokenList.get(tokIndex + 1).getValue().equals("=")) {
+                expr = new ParseTreeNode(stmt, NodeType.RASMT);
+                expandRAsmt(tokenList, expr);
+                stmt.addChild(expr);
+            }
+            else {
+                expandExpr(tokenList, expr);
+                stmt.addChild(expr);
+            }
         }
 
         else {
@@ -235,6 +248,18 @@ public class JottParser {
                 expandExpr(tokenList, expr);
                 stmt.addChild(expr);
             }
+
+//            else if (s.equals("lower_keyword")) {
+//                if (tokenList.get(tokIndex).getValue().equals("=")) {
+//                    expr = new ParseTreeNode(stmt, NodeType.RASMT);
+//                    expandRAsmt(tokenList, expr);
+//                    stmt.addChild(expr);
+//                }
+//                else {
+//                    expandExpr(tokenList, expr);
+//                    stmt.addChild(expr);
+//                }
+//            }
 
             else if (tokenList.get(tokIndex).getType().equals("if")) {
                 ParseTreeNode nest_stmt = new ParseTreeNode(stmt, NodeType.STMT);
@@ -497,6 +522,7 @@ public class JottParser {
                     System.exit(-1);
                 }
             }
+
 
             else {
                 NodeType type = map.get(tokenList.get(tokIndex).getValue());
@@ -876,6 +902,9 @@ public class JottParser {
         }
 
         id.setValue(val);
+        id.setLineString(tokenList.get(tokIndex).line_string);
+        id.setLine_number(tokenList.get(tokIndex).line);
+        id.setFileName(fileName);
     }
 
 

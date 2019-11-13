@@ -171,6 +171,7 @@ public class JottEvaluation {
 
     public static void stmtEval(ParseTreeNode tree){
         List<ParseTreeNode> children = tree.getAllChildren();
+        if (children.size() == 0) return;
         if (children.get(0).getNodeType().equals(NodeType.ASMT)) {
             varName = children.get(0).getAllChildren().get(1).getValue();
             ASMTEval(children.get(0));
@@ -184,6 +185,10 @@ public class JottEvaluation {
         else if (children.get(0).getNodeType().equals(NodeType.PRINT)) {
             varName = "";
             printEval(children.get(0));
+        }
+
+        else if (children.get(0).getNodeType().equals(NodeType.RASMT)) {
+            RasmtEval(children.get(0));
         }
 
         else if (children.get(0).getNodeType().equals(NodeType.IF)) {
@@ -266,23 +271,56 @@ public class JottEvaluation {
         String var_name = children.get(0).getValue();
         ParseTreeNode expr = children.get(1);
 
-        if (map.get(var_name) == null) {
+        if (!map.containsKey(var_name)) {
             System.out.println("Variable not initialized...");
         }
+
+        Variable val = map.get(var_name);
 
         if (expr.getNodeType().equals(NodeType.EXPR)) {
             expr = expr.getAllChildren().get(0);
             if (expr.getNodeType().equals(NodeType.D_EXPR)) {
                 ans = doubleEval(expr);
+                if (!val.getType().equals("double")) {
+                    String type = "";
+                    if (val.getType().equals("string")) {
+                        type = "String";
+                    }
+                    else type = "Integer";
+                    System.out.println("Syntax Error: Invalid type in re-assignment: Expected " + type + " got Double" + ", " +
+                            "\"" + children.get(0).getLineString() + "\"" + " (inputs/" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
+                    System.exit(-1);
+                }
                 map.put(var_name, new Variable(var_name, "double", ans));
-
             }
+
             else if (expr.getNodeType().equals(NodeType.I_EXPR)) {
                 ans = intEval(expr);
+                if (!val.getType().equals("int")) {
+                    String type = "";
+                    if (val.getType().equals("string")) {
+                        type = "String";
+                    }
+                    else type = "Double";
+                    System.out.println("Syntax Error: Invalid type in re-assignment: Expected " + type + " got Integer" + ", " +
+                            "\"" + children.get(0).getLineString() + "\"" + " (inputs/" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
+                    System.exit(-1);
+                }
                 map.put(var_name, new Variable(var_name, "int", ans));
             }
+
             else {
                 ans = stringEval(expr);
+                if (!val.getType().equals("string")) {
+                    String type = "";
+                    if (val.getType().equals("double")) {
+                        type = "Double";
+                    }
+                    else type = "Integer";
+                    System.out.println("Syntax Error: Invalid type in re-assignment: Expected " + type + " got String" + ", " +
+                            "\"" + children.get(0).getLineString() + "\"" + " (inputs/" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
+                    System.exit(-1);
+                }
                 map.put(var_name, new Variable(var_name, "string", ans));
             }
         }
@@ -292,6 +330,8 @@ public class JottEvaluation {
 
     public static void stmtListEval(ParseTreeNode tree){
         List<ParseTreeNode> children = tree.getAllChildren();
+
+        if (children.size() == 0) return;
 
         if (children.get(0).getNodeType().equals(NodeType.STMT)) {
             stmtEval(children.get(0));
@@ -482,7 +522,6 @@ public class JottEvaluation {
 
                 map.put(varName, new Variable(varName, "double", ans));
             }
-            //TODO:ERROR
             return ans;
         }
 
