@@ -93,6 +93,11 @@ public class JottParser {
             }
         }
 
+        //phase 2:
+        else if (type.equals("if")) {
+            expandIf(tokenList, stmt);
+        }
+
         else if (type.equals("type_Double")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
             expandASMT(tokenList, asmt, NodeType.DOUBLE);
@@ -125,6 +130,219 @@ public class JottParser {
             }*/
 
             stmt.addChild(new ParseTreeNode(stmt, NodeType.END_STMT));
+        }
+    }
+
+    private static void expandBSTMTLIST(List<JottTokenizer.Token> tokenList, ParseTreeNode stmtList) {
+        if (tokenList.get(tokIndex).getType().equals("end_blk")) {
+            stmtList.addChild(new ParseTreeNode(stmtList, NodeType.EPSILON));
+            return;
+        }
+        else {
+            ParseTreeNode stmt = new ParseTreeNode(stmtList, NodeType.B_STMT);
+            ParseTreeNode stmtListNext = new ParseTreeNode(stmtList, NodeType.B_STMT_LIST);
+            expandBSTMT(tokenList, stmt);
+            expandBSTMTLIST(tokenList, stmtListNext);
+            stmtList.addChild(stmt);
+            stmtList.addChild(stmtListNext);
+        }
+    }
+
+    private static void expandBSTMT(List<JottTokenizer.Token> tokenList, ParseTreeNode stmt) {
+        String type = tokenList.get(tokIndex).getType();
+        if (type.equals("print")) {
+            ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.PRINT);
+            expandPrint(tokenList, prt);
+            stmt.addChild(prt);
+            tokIndex ++;
+            if (tokenList.get(tokIndex).getType().equals("end_blk")){
+                return;
+            }
+            tokIndex ++;
+        }
+
+        else if (type.equals("lower_keyword")) {
+            ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.RASMT);
+            expandRAsmt(tokenList, prt);
+            stmt.addChild(prt);
+        }
+
+        else if (type.equals("end_stmt")){
+            tokIndex ++;
+            if (tokIndex < tokenList.size() && !tokenList.get(tokIndex).getType().equals("end_blk")) {
+                expandBSTMT(tokenList, stmt);
+            }
+        }
+
+        else if (type.equals("end_blk")){
+            return;
+        }
+
+        else if (type.equals("if")) {
+            expandIf(tokenList, stmt);
+        }
+
+        else {
+            ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.EXPR);
+            expandExpr(tokenList, prt);
+            stmt.addChild(prt);
+            tokIndex++;
+
+            /*if (tokIndex != tokenList.size() - 1) {
+                System.out.println("Syntax error: Statement ends too soon at at line " + tokenList.get(tokIndex).line +
+                        ", character " + tokenList.get(tokIndex).character_count +
+                        " \"" + tokenList.get(tokIndex).line_string + "\"");
+                System.exit(-1);
+            }*/
+
+            stmt.addChild(new ParseTreeNode(stmt, NodeType.END_STMT));
+
+        }
+    }
+
+    private static void expandRAsmt(List<JottTokenizer.Token> tokenList, ParseTreeNode stmt){
+        String type = tokenList.get(tokIndex).getType();
+        ParseTreeNode id = new ParseTreeNode(stmt, NodeType.ID);
+
+        //tokIndex ++;
+        expandId(tokenList, id);
+        cur_type = NodeType.INTEGER;
+        cur_varName = id.getValue();
+        map.put(cur_varName, cur_type);
+        stmt.addChild(id);
+
+        tokIndex ++;
+        ParseTreeNode expr = new ParseTreeNode(stmt, NodeType.EXPR);
+        tokIndex ++;
+        expandExpr(tokenList, expr);
+        stmt.addChild(expr);
+
+
+    }
+
+
+    private static void expandIf(List<JottTokenizer.Token> tokenList, ParseTreeNode stmt) {
+        ParseTreeNode head = new ParseTreeNode(stmt, NodeType.IF);
+        ParseTreeNode head_s = new ParseTreeNode(stmt, NodeType.START_PAREN);
+        stmt.addChild(head);
+        stmt.addChild(head_s);
+
+        tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            String s = tokenList.get(tokIndex).getType();
+            ParseTreeNode expr = new ParseTreeNode(stmt, NodeType.EXPR);
+            if (s.equals("double") || s.equals("integer") || s.equals("string") || s.equals("lower_keyword")) {
+                expandExpr(tokenList, expr);
+                stmt.addChild(expr);
+            }
+
+            else if (tokenList.get(tokIndex).getType().equals("if")) {
+                ParseTreeNode nest_stmt = new ParseTreeNode(stmt, NodeType.STMT);
+                expandIf(tokenList, nest_stmt);
+                expr.addChild(nest_stmt);
+                stmt.addChild(expr);
+            }
+
+            else {
+                //TODO: ERROR HANDLING
+                System.out.println("ERROR: condition for if stmt");
+                System.exit(-1);
+            }
+        }
+
+        //tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (!tokenList.get(tokIndex).getType().equals("end_paren")) {
+                System.out.println("Syntax Error: Missing end paren" + tokenList.get(tokIndex).line_string);
+                System.exit(-1);
+            }
+            ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_PAREN);
+            stmt.addChild(head_e);
+        }
+
+        tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (!tokenList.get(tokIndex).getType().equals("start_blk")) {
+                System.out.println("Syntax Error: Missing start_blk" + tokenList.get(tokIndex).line_string);
+                System.exit(-1);
+            }
+            ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.START_BLK);
+            stmt.addChild(head_e);
+        }
+
+        tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            ParseTreeNode blst = new ParseTreeNode(stmt, NodeType.B_STMT_LIST);
+            expandBSTMTLIST(tokenList, blst);
+            stmt.addChild(blst);
+        }
+
+        //tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (!tokenList.get(tokIndex).getType().equals("end_blk")) {
+                System.out.println("Syntax Error: Missing end_blk" + tokenList.get(tokIndex).line_string);
+                System.exit(-1);
+            }
+            ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_BLK);
+            stmt.addChild(head_e);
+            tokIndex ++;
+            if (!tokenList.get(tokIndex).getValue().equals("else"))
+                return;
+        }
+
+        if (tokIndex == tokenList.size()) {
+            return;
+        }
+
+        //tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (tokenList.get(tokIndex).getValue().equals("else")) {
+                stmt.addChild(new ParseTreeNode(stmt, NodeType.ELSE));
+                tokIndex ++;
+                expandElse(tokenList, stmt);
+                tokIndex ++;
+                //stmt.addChild(else_stmt);
+            }
+
+            else if (tokenList.get(tokIndex).getType().equals("end_blk")) {
+                return;
+            }
+
+            else {
+                System.out.println("Syntax Error: additional input" + tokenList.get(tokIndex).line_string);
+                System.exit(-1);
+            }
+        }
+
+
+        else {
+            //TODO: ERROR HANDLING
+            return;
+        }
+    }
+
+    private static void expandElse(List<JottTokenizer.Token> tokenList, ParseTreeNode stmt) {
+        ParseTreeNode head_s = new ParseTreeNode(stmt, NodeType.START_BLK);
+        stmt.addChild(head_s);
+
+        tokIndex++;
+        if (tokIndex < tokenList.size()) {
+            ParseTreeNode blst = new ParseTreeNode(stmt, NodeType.B_STMT_LIST);
+            expandBSTMTLIST(tokenList, blst);
+            stmt.addChild(blst);
+        }
+
+        //tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (tokenList.get(tokIndex).getType().equals("end_blk")) {
+                ParseTreeNode end = new ParseTreeNode(stmt, NodeType.END_BLK);
+                stmt.addChild(end);
+                return;
+            }
+        }
+
+        else {
+            System.out.println("Syntax Error: " + tokenList.get(tokIndex).line_string);
         }
 
     }
@@ -395,12 +613,12 @@ public class JottParser {
             if (type.equals("divide")) op = new ParseTreeNode(dexpr, NodeType.OP, "/");
             if (type.equals("mult")) op = new ParseTreeNode(dexpr, NodeType.OP, "*");
             if (type.equals("power")) op = new ParseTreeNode(dexpr, NodeType.OP, "^");
-            if (type.equals("greater")) op = new ParseTreeNode(dexpr, NodeType.OP, ">");
-            if (type.equals("less")) op = new ParseTreeNode(dexpr, NodeType.OP, "<");
-            if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "!=");
-            if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, ">=");
-            if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
-            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
+            if (type.equals("greater")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">");
+            if (type.equals("less")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<");
+            if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "!=");
+            if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">=");
+            if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
+            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
 
 
             if (children.size() > 1) {
@@ -605,12 +823,12 @@ public class JottParser {
             if (type.equals("divide")) op = new ParseTreeNode(dexpr, NodeType.OP, "/");
             if (type.equals("mult")) op = new ParseTreeNode(dexpr, NodeType.OP, "*");
             if (type.equals("power")) op = new ParseTreeNode(dexpr, NodeType.OP, "^");
-            if (type.equals("greater")) op = new ParseTreeNode(dexpr, NodeType.OP, ">");
-            if (type.equals("less")) op = new ParseTreeNode(dexpr, NodeType.OP, "<");
-            if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "!=");
-            if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, ">=");
-            if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
-            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.OP, "<=");
+            if (type.equals("greater")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">");
+            if (type.equals("less")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<");
+            if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "!=");
+            if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">=");
+            if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
+            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
 
             if (children.size() > 1) {
                 if (children.size() == 3) {
@@ -663,7 +881,7 @@ public class JottParser {
 
     private static void expandDBL(List<JottTokenizer.Token> tokenList, ParseTreeNode dbl) {
         String val = tokenList.get(tokIndex).getValue();
-        ParseTreeNode child = null;
+        //ParseTreeNode child = null;
         String sign = tokenList.get(tokIndex - 1).getType();
         String newSign = "";
 
@@ -689,10 +907,16 @@ public class JottParser {
 
         if (newSign.equals("+")) {
             dbl.setValue(val);
+            dbl.setLineString(tokenList.get(tokIndex).line_string);
+            dbl.setLine_number(tokenList.get(tokIndex).line);
+            dbl.setFileName(fileName);
         }
 
         else {
             dbl.setValue("-" + val);
+            dbl.setLineString(tokenList.get(tokIndex).line_string);
+            dbl.setLine_number(tokenList.get(tokIndex).line);
+            dbl.setFileName(fileName);
         }
     }
 

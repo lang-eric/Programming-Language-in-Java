@@ -18,7 +18,7 @@ public class JottEvaluation {
         return outputs;
     }
 
-    public static String arithmeticOp(Object obj1, Object obj2, String op) {
+    public static String arithmeticOp(Object obj1, Object obj2, String op, String line) {
         int ans = 0;
         double ans_double = 0;
 
@@ -78,7 +78,7 @@ public class JottEvaluation {
                     return String.valueOf(ans);
 
                 } catch (Exception e) {
-                    System.out.println("Runtime Error: Divide by zero, ");
+                    System.out.println("Runtime Error: Divide by zero, " + line);
                     System.exit(-1);
                 }
                 return String.valueOf(ans_double);
@@ -186,9 +186,108 @@ public class JottEvaluation {
             printEval(children.get(0));
         }
 
+        else if (children.get(0).getNodeType().equals(NodeType.IF)) {
+            int isTrue = ifConditionEval(children.get(2));
+            if (isTrue == 1) {
+                BStmtListEval(children.get(5));
+            }
+            else {
+                if (children.size() > 7) {
+                    BStmtListEval(children.get(9));
+                }
+            }
+        }
+
         else {
 
         }
+    }
+
+    public static int ifConditionEval(ParseTreeNode tree) {
+        String ans = intEval(tree.getAllChildren().get(0));
+        int isTrue = Integer.parseInt(ans);
+        return isTrue;
+    }
+
+    public static void BStmtListEval(ParseTreeNode tree) {
+        List<ParseTreeNode> children = tree.getAllChildren();
+        if (children.get(0).getNodeType().equals(NodeType.B_STMT)) {
+            BStmtEval(children.get(0));
+            BStmtListEval(children.get(1));
+        }
+
+        else if (children.get(0).getNodeType().equals(NodeType.B_STMT_LIST)) {
+            BStmtListEval(children.get(0));
+        }
+
+        else if (children.get(0).getNodeType().equals(NodeType.EPSILON)) {
+            return;
+        }
+    }
+
+    public static void BStmtEval(ParseTreeNode tree) {
+        ParseTreeNode child = tree.getAllChildren().get(0);
+        if (child.getNodeType().equals(NodeType.PRINT)) {
+            printEval(child);
+        }
+
+        else if (child.getNodeType().equals(NodeType.RASMT)) {
+            RasmtEval(child);
+        }
+
+        else if (child.getNodeType().equals(NodeType.IF)) {
+            int isTrue = ifConditionEval(tree.getAllChildren().get(2));
+            if (isTrue == 1) {
+                BStmtListEval(tree.getAllChildren().get(5));
+            }
+            else {
+                if (tree.getAllChildren().size() > 7) {
+                    BStmtListEval(tree.getAllChildren().get(9));
+                }
+            }
+        }
+
+        else if (child.getNodeType().equals(NodeType.I_EXPR)){
+            intEval(tree);
+        }
+
+        else if (child.getNodeType().equals(NodeType.D_EXPR)) {
+            doubleEval(child);
+        }
+
+        else if (child.getNodeType().equals(NodeType.S_EXPR)) {
+            stringEval(child);
+        }
+    }
+
+    public static void RasmtEval(ParseTreeNode tree) {
+        String ans = "";
+        List<ParseTreeNode> children = tree.getAllChildren();
+        String var_name = children.get(0).getValue();
+        ParseTreeNode expr = children.get(1);
+
+        if (map.get(var_name) == null) {
+            System.out.println("Variable not initialized...");
+        }
+
+        if (expr.getNodeType().equals(NodeType.EXPR)) {
+            expr = expr.getAllChildren().get(0);
+            if (expr.getNodeType().equals(NodeType.D_EXPR)) {
+                ans = doubleEval(expr);
+                map.put(var_name, new Variable(var_name, "double", ans));
+
+            }
+            else if (expr.getNodeType().equals(NodeType.I_EXPR)) {
+                ans = intEval(expr);
+                map.put(var_name, new Variable(var_name, "int", ans));
+            }
+            else {
+                ans = stringEval(expr);
+                map.put(var_name, new Variable(var_name, "string", ans));
+            }
+        }
+
+
     }
 
     public static void stmtListEval(ParseTreeNode tree){
@@ -260,7 +359,7 @@ public class JottEvaluation {
                 int index = Integer.parseInt(indexAsString);
                 ans = String.valueOf(str.charAt(index));
             }
-            map.put(varName, new Variable(varName, "str", ans));
+            map.put(varName, new Variable(varName, "string", ans));
         }
         return ans;
     }
@@ -269,7 +368,7 @@ public class JottEvaluation {
         int nums = tree.getAllChildren().size();
         List<ParseTreeNode> children = tree.getAllChildren();
         String ans = "";
-        if (tree.getNodeType().equals(NodeType.INT) || tree.getNodeType().equals(NodeType.OP)) {
+        if (tree.getNodeType().equals(NodeType.INT) || tree.getNodeType().equals(NodeType.OP) || tree.getNodeType().equals(NodeType.REL_OP)) {
             return tree.getValue();
         }
         else if (tree.getNodeType().equals(NodeType.I_EXPR)) {
@@ -282,6 +381,11 @@ public class JottEvaluation {
                 String left = intEval(children.get(0));
                 String op = intEval(children.get(1));
                 String right = intEval(children.get(2));
+                ParseTreeNode child = children.get(2);
+
+                String line_str = "\"" + child.getLineString() + "\"" + " (inputs/" + child.getFileName() + ":" + child.getLine_number() + ")";
+
+
                 int d1 = 0;
                 int d2 = 0;
                 try {
@@ -295,7 +399,7 @@ public class JottEvaluation {
                 }
 
                 if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
-                    ans = arithmeticOp(d1, d2, op);
+                    ans = arithmeticOp(d1, d2, op, line_str);
                 }
 
                 map.put(varName, new Variable(varName, "int", ans));
@@ -347,7 +451,7 @@ public class JottEvaluation {
         int nums = tree.getAllChildren().size();
         List<ParseTreeNode> children = tree.getAllChildren();
         String ans = "";
-        if (tree.getNodeType().equals(NodeType.DBL) || tree.getNodeType().equals(NodeType.OP)) {
+        if (tree.getNodeType().equals(NodeType.DBL) || tree.getNodeType().equals(NodeType.OP) || tree.getNodeType().equals(NodeType.REL_OP)) {
             return tree.getValue();
         }
 
@@ -362,6 +466,7 @@ public class JottEvaluation {
                 String left = doubleEval(children.get(0));
                 String op = doubleEval(children.get(1));
                 String right = doubleEval(children.get(2));
+                String line_str = children.get(2).getLineString();
 
                 Double d1 = Double.parseDouble(left);
                 Double d2 = Double.parseDouble(right);
@@ -372,7 +477,7 @@ public class JottEvaluation {
                 }
 
                 if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
-                    ans = arithmeticOp(d1, d2, op);
+                    ans = arithmeticOp(d1, d2, op, line_str);
                 }
 
                 map.put(varName, new Variable(varName, "double", ans));

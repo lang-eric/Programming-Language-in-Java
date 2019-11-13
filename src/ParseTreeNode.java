@@ -9,6 +9,9 @@ public class ParseTreeNode {
 	private List<ParseTreeNode> children;
 	private NodeType type;
 	private String value;
+	private String line;
+	private int line_number;
+	private String file;
 
 
 //	private ParseTreeNode(ParseTreeNode parent, NodeType program) {
@@ -26,6 +29,8 @@ public class ParseTreeNode {
 		this.type = type;
 		this.children = new ArrayList<>();
 		this.value = value;
+		this.line = null;
+		this.file = null;
 	}
 
 	public ParseTreeNode(ParseTreeNode parent, NodeType type) {
@@ -100,6 +105,30 @@ public class ParseTreeNode {
 	 */
 	public boolean isLeafNode() {
 		return this.children.isEmpty();
+	}
+
+	public void setLineString(String line) {
+		this.line = line;
+	}
+
+	public String getLineString() {
+		return line;
+	}
+
+	public void setLine_number(int n) {
+		line_number = n;
+	}
+
+	public int getLine_number() {
+		return line_number;
+	}
+
+	public void setFileName(String file) {
+		this.file = file;
+	}
+
+	public String getFileName() {
+		return file;
 	}
 
 	@Override

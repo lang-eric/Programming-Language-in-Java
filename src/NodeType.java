@@ -53,7 +53,10 @@ enum NodeType {
         B_STMT_LIST,
         B_STMT,
         ASSIGN,
-        RASMT
+        RASMT,
+        REL_OP,
+        START_BLK,
+        END_BLK
 
 
 }
