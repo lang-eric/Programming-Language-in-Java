@@ -21,7 +21,7 @@ public class JottRunner {
             }
             String fileAsString = sb.toString();
             ArrayList<JottTokenizer.Token> TokenList;
-            TokenList= JottTokenizer.JottTokenizer(fileAsString);
+            TokenList= JottTokenizer.JottTokenizer(fileAsString, file_name);
 //            for (JottTokenizer.Token token: TokenList) {
 //                System.out.println("Token Type: "+token.getType()+" Token Value: "+token.getValue());
 //            }

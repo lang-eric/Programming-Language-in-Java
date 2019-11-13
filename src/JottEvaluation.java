@@ -22,15 +22,15 @@ public class JottEvaluation {
         int ans = 0;
         double ans_double = 0;
 
-        if (obj1 instanceof Integer && !(obj2 instanceof Integer)) {
-            System.out.println("Syntax Error: Type mismatch: Expected Integer got Double ");
-            System.exit(-1);
-        }
+//        if (obj1 instanceof Integer && !(obj2 instanceof Integer)) {
+//            System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, " + line);
+//            System.exit(-1);
+//        }
 
-        if (obj1 instanceof Double && !(obj2 instanceof Double)) {
-            System.out.println("Syntax Error: Type mismatch: Expected Double got Integer ");
-            System.exit(-1);
-        }
+//        if (obj1 instanceof Double && !(obj2 instanceof Double)) {
+//            System.out.println("Syntax Error: Type mismatch: Expected Double got Integer " + line);
+//            System.exit(-1);
+//        }
         //Syntax Error: Type mismatch: Expected Integer got Double, "print( x + y );" (inputs/prog3.j:4)
 
         if (op.equals("+")) {
@@ -288,7 +288,7 @@ public class JottEvaluation {
                     }
                     else type = "Integer";
                     System.out.println("Syntax Error: Invalid type in re-assignment: Expected " + type + " got Double" + ", " +
-                            "\"" + children.get(0).getLineString() + "\"" + " (inputs/" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
+                            "\"" + children.get(0).getLineString() + "\"" + " (" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
                     System.exit(-1);
                 }
                 map.put(var_name, new Variable(var_name, "double", ans));
@@ -303,7 +303,7 @@ public class JottEvaluation {
                     }
                     else type = "Double";
                     System.out.println("Syntax Error: Invalid type in re-assignment: Expected " + type + " got Integer" + ", " +
-                            "\"" + children.get(0).getLineString() + "\"" + " (inputs/" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
+                            "\"" + children.get(0).getLineString() + "\"" + " (" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
                     System.exit(-1);
                 }
                 map.put(var_name, new Variable(var_name, "int", ans));
@@ -318,7 +318,7 @@ public class JottEvaluation {
                     }
                     else type = "Integer";
                     System.out.println("Syntax Error: Invalid type in re-assignment: Expected " + type + " got String" + ", " +
-                            "\"" + children.get(0).getLineString() + "\"" + " (inputs/" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
+                            "\"" + children.get(0).getLineString() + "\"" + " (" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
                     System.exit(-1);
                 }
                 map.put(var_name, new Variable(var_name, "string", ans));
@@ -423,7 +423,7 @@ public class JottEvaluation {
                 String right = intEval(children.get(2));
                 ParseTreeNode child = children.get(2);
 
-                String line_str = "\"" + child.getLineString() + "\"" + " (inputs/" + child.getFileName() + ":" + child.getLine_number() + ")";
+                String line_str = "\"" + child.getLineString() + "\"" + " (" + child.getFileName() + ":" + child.getLine_number() + ")";
 
 
                 int d1 = 0;
@@ -449,7 +449,8 @@ public class JottEvaluation {
         }
         else {
             if (map.get(tree.getValue()).getType().equals("double")) {
-                System.out.println("Syntax Error: Type mismatch: Expected Integer got Double");
+                String line_str = "\"" + tree.getLineString() + "\"" + " (" + tree.getFileName() + ":" + tree.getLine_number() + ")";
+                System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, " + line_str);
                 System.exit(-1);
             }
             return map.get(tree.getValue()).getValue();
@@ -527,7 +528,8 @@ public class JottEvaluation {
 
         else {
             if (map.get(tree.getValue()).getType().equals("int")) {
-                System.out.println("Syntax Error: Type mismatch: Expected Double got Integer");
+                String line_str = "\"" + tree.getLineString() + "\"" + " (" + tree.getFileName() + ":" + tree.getLine_number() + ")";
+                System.out.println("Syntax Error: Type mismatch: Expected Double got Integer, " + line_str);
                 System.exit(-1);
             }
             return map.get(tree.getValue()).getValue();

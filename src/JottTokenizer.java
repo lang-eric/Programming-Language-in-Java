@@ -90,7 +90,7 @@ public class JottTokenizer {
 
 
 
-    public static ArrayList<Token> JottTokenizer(String args){
+    public static ArrayList<Token> JottTokenizer(String args, String filename){
         ArrayList<Character> temp=new ArrayList<>();
         ArrayList<Token> Tokens = new ArrayList<>();
         char[] input=args.toCharArray();
@@ -481,8 +481,7 @@ public class JottTokenizer {
                         }
                     }
                     if(count==length){
-                        System.out.println("Syntax error: Missing '\"' at line "+line_number + ", character "+character_count+
-                                "\n\""+JottRunner.line_list.get(line_number-1)+"\"");
+                        System.out.println("Syntax Error: Missing " + "\"" + ", " + "\"" + JottRunner.line_list.get(line_number-1) + "\"" + " (" + filename + ":" + line_number + ")");
                         System.exit(-1);
                     }
                 }
@@ -493,8 +492,7 @@ public class JottTokenizer {
                     break;
                 }
                 else{
-                    System.out.println("Syntax error: Missing '\"' at line "+line_number + ", character "+character_count+
-                            "\n\""+JottRunner.line_list.get(line_number-1)+"\"");
+                    System.out.println("Syntax Error: Missing " + "\"" + ", " + "\"" + JottRunner.line_list.get(line_number-1) + "\"" + " (" + filename + ":" + line_number + ")");
                     System.exit(-1);
                 }
             }
