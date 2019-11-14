@@ -126,6 +126,65 @@ public class JottParser {
             }
         }
 
+        else if (type.equals("for")) {
+            ParseTreeNode forLoopStart = new ParseTreeNode(stmt, NodeType.FOR);
+            stmt.addChild(forLoopStart);
+            tokIndex += 1;
+            ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
+
+            switch(tokenList.get(tokIndex).getType()) {
+                case "type_Double":
+                    expandASMT(tokenList, asmt, NodeType.DOUBLE);
+                    break;
+                case "type_Integer":
+                    expandASMT(tokenList, asmt, NodeType.INTEGER);
+                    break;
+                case "type_String":
+                    expandASMT(tokenList, asmt, NodeType.STR);
+                    break;
+            }
+            stmt.addChild(asmt);
+            ParseTreeNode i_expr = new ParseTreeNode(stmt, NodeType.I_EXPR);
+            expandIExpr(tokenList, i_expr);
+            if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+                System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex - 2).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex - 2).line + ")");
+                System.exit(-1);
+            }
+            stmt.addChild(i_expr);
+            stmt.addChild(new ParseTreeNode(stmt, NodeType.END_STMT));
+            tokIndex += 1;
+            ParseTreeNode r_asmt = new ParseTreeNode(stmt, NodeType.RASMT);
+            expandRAsmt(tokenList, r_asmt);
+            stmt.addChild(r_asmt);
+
+            if(!(tokenList.get(tokIndex).getType().equals("end_paren"))) {
+                System.out.println("Syntax Error: missing closing parenthesis, \"" + tokenList.get(tokIndex - 1).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex - 1).line + ") " + tokenList.get(tokIndex).getValue());
+                System.exit(-1);
+            }
+            addEndParen(stmt);
+            tokIndex += 1;
+            if(!(tokenList.get(tokIndex).getType().equals("start_blk"))) {
+                System.out.println("Syntax Error: missing opening bracket, \"" + tokenList.get(tokIndex - 1).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex - 1).line + ") " + tokenList.get(tokIndex).getValue());
+                System.exit(-1);
+            }
+            stmt.addChild(new ParseTreeNode(stmt, NodeType.START_BLK));
+            tokIndex += 1;
+            ParseTreeNode b_stmt_list = new ParseTreeNode(stmt, NodeType.B_STMT_LIST);
+            expandBSTMTLIST(tokenList, b_stmt_list);
+            stmt.addChild(b_stmt_list);
+
+            if(!(tokenList.get(tokIndex).getType().equals("end_blk"))) {
+                System.out.println("Syntax Error: missing closing bracket, \"" + tokenList.get(tokIndex - 1).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex - 1).line + ") " + tokenList.get(tokIndex).getValue());
+                System.exit(-1);
+            }
+            stmt.addChild(new ParseTreeNode(stmt, NodeType.END_BLK));
+            tokIndex += 1;
+        }
+
         else {
             ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.EXPR);
             expandExpr(tokenList, prt);
@@ -164,7 +223,7 @@ public class JottParser {
             ParseTreeNode prt = new ParseTreeNode(stmt, NodeType.PRINT);
             expandPrint(tokenList, prt);
             stmt.addChild(prt);
-            tokIndex ++;
+            //tokIndex ++;
             if (tokenList.get(tokIndex).getType().equals("end_blk")){
                 return;
             }
