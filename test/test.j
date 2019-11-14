@@ -16,3 +16,5 @@ joe = "momma";
 print(joe);
 Integer switcharoo = 3 > 1;
 print(switcharoo);
+//FOR LOOP TIME
+for(Integer d = 0; d < 10; d = d + 1) { print("IN THE L00P"); }
