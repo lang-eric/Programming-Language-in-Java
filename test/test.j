@@ -11,3 +11,8 @@ print("help");
 print(f + nein);
 String whyAreWeStillHere = "just to suffer";
 //print(thisWasNotDefined);
+String joe = "joe who";
+joe = "momma";
+print(joe);
+Integer switcharoo = 3 > 1;
+print(switcharoo);
