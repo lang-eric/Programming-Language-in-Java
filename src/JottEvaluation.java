@@ -233,9 +233,6 @@ public class JottEvaluation {
 
     public static int ifConditionEval(ParseTreeNode tree) {
         String ans = intEval(tree.getAllChildren().get(0));
-        if (tree.getNodeType().equals(NodeType.I_EXPR) || tree.getNodeType().equals(NodeType.D_EXPR)) {
-            ans = intEval(tree);
-        }
         int isTrue = Integer.parseInt(ans);
         return isTrue;
     }
