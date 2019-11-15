@@ -1,5 +1,4 @@
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class JottParser {
 
@@ -94,7 +93,9 @@ public class JottParser {
         else if (type.equals("if")) {
             expandIf(tokenList, stmt);
         }
-        else if (type.equals("while")) expandWhile(tokenList,stmt);
+        else if (type.equals("while")) {
+            expandWhile(tokenList,stmt);
+        }
 
         else if (type.equals("type_Double")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
@@ -977,21 +978,42 @@ public class JottParser {
             tokIndex ++;
             expandDExpr(tokenList, dexpr);
         }
-
-        else if (type.equals("plus") || type.equals("divide")  || type.equals("power") || type.equals("mult") ||
-                type.equals("greater") || type.equals("less") || type.equals("greater_eq") || type.equals("less_eq") ||
-                type.equals("eq") || type.equals("not_eq")) {
-            ParseTreeNode op = new ParseTreeNode(dexpr, NodeType.OP, "+");
-            if (type.equals("divide")) op = new ParseTreeNode(dexpr, NodeType.OP, "/");
-            if (type.equals("mult")) op = new ParseTreeNode(dexpr, NodeType.OP, "*");
-            if (type.equals("power")) op = new ParseTreeNode(dexpr, NodeType.OP, "^");
-            if (type.equals("greater")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">");
-            if (type.equals("less")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<");
-            if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "!=");
-            if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">=");
-            if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
-            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
-
+        else if (new HashSet<String>(Arrays.asList("plus","divide","power","mult","greater","less","greater_eq","eq","not_eq")).contains(type))
+        {
+            ParseTreeNode op;
+            switch (type) {
+                case "plus":
+                    op = new ParseTreeNode(dexpr, NodeType.OP, "+");
+                case "divide":
+                    op = new ParseTreeNode(dexpr, NodeType.OP, "/");
+                    break;
+                case "mult":
+                    op = new ParseTreeNode(dexpr, NodeType.OP, "*");
+                    break;
+                case "power":
+                    op = new ParseTreeNode(dexpr, NodeType.OP, "^");
+                    break;
+                case "greater":
+                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">");
+                    break;
+                case "less":
+                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<");
+                    break;
+                case "not_eq":
+                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, "!=");
+                    break;
+                case "greater_eq":
+                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">=");
+                    break;
+                case "less_eq":
+                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
+                    break;
+                case "eq":
+                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
+                    break;
+                default:             //op should not be null.
+                    throw new IllegalStateException("Unexpected value: " + type);
+            }
             if (children.size() > 1) {
                 if (children.size() == 3) {
                     ParseTreeNode child = new ParseTreeNode(dexpr, NodeType.D_EXPR);
