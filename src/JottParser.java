@@ -364,8 +364,6 @@ public class JottParser {
                 if (!tokenList.get(tokIndex).getValue().equals("else"))
                     return;
             }
-            if (!tokenList.get(tokIndex).getValue().equals("else"))
-                return;
         }
 
         if (tokIndex == tokenList.size()) {
