@@ -1039,6 +1039,9 @@ public class JottParser {
         }
         res += val.charAt(0);
 
+        id.setLineString(tokenList.get(tokIndex).line_string);
+        id.setLine_number(tokenList.get(tokIndex).line);
+        id.setFileName(fileName);
 
         for (int i = 1; i < val.length(); i++) {
             //TODO: check for error
@@ -1081,6 +1084,9 @@ public class JottParser {
         else {
             dbl.setValue("-" + val);
         }
+        dbl.setLineString(tokenList.get(tokIndex).line_string);
+        dbl.setLine_number(tokenList.get(tokIndex).line);
+        dbl.setFileName(fileName);
     }
 
 

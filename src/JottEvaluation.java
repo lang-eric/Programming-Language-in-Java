@@ -7,7 +7,6 @@ public class JottEvaluation {
     private static List<String> outputs = new ArrayList<>();
     private static HashMap<String, Variable> map = new HashMap<>();
     private static String varName = "";
-    private static int isLoopCond = 0;
 
     public static List<String> JottEvaluation(ParseTreeNode tree) {
         if (tree.getAllChildren().size() == 0) {
@@ -225,7 +224,6 @@ public class JottEvaluation {
                 BStmtListEval(children.get(7));
                 RasmtEval(children.get(4));
             }
-            isLoopCond = 0;
         }
 
         else {
@@ -236,7 +234,6 @@ public class JottEvaluation {
     public static int ifConditionEval(ParseTreeNode tree) {
         String ans = intEval(tree.getAllChildren().get(0));
         if (tree.getNodeType().equals(NodeType.I_EXPR) || tree.getNodeType().equals(NodeType.D_EXPR)) {
-            isLoopCond = 1;
             ans = intEval(tree);
         }
         int isTrue = Integer.parseInt(ans);
@@ -419,7 +416,6 @@ public class JottEvaluation {
                 int index = Integer.parseInt(indexAsString);
                 ans = String.valueOf(str.charAt(index));
             }
-            if (isLoopCond == 1) return ans;
             map.put(varName, new Variable(varName, "string", ans));
         }
         return ans;
@@ -464,7 +460,6 @@ public class JottEvaluation {
                 if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
                     ans = arithmeticOp(d1, d2, op, line_str);
                 }
-                if (isLoopCond == 1) return ans;
                 map.put(varName, new Variable(varName, "int", ans));
             }
             //TODO:ERROR
