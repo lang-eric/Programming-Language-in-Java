@@ -21,17 +21,6 @@ public class JottEvaluation {
         int ans = 0;
         double ans_double = 0;
 
-//        if (obj1 instanceof Integer && !(obj2 instanceof Integer)) {
-//            System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, " + line);
-//            System.exit(-1);
-//        }
-
-//        if (obj1 instanceof Double && !(obj2 instanceof Double)) {
-//            System.out.println("Syntax Error: Type mismatch: Expected Double got Integer " + line);
-//            System.exit(-1);
-//        }
-        //Syntax Error: Type mismatch: Expected Integer got Double, "print( x + y );" (inputs/prog3.j:4)
-
         if (op.equals("+")) {
             if (obj1 instanceof Integer) {
                 ans = (int) obj1 + (int) obj2;
