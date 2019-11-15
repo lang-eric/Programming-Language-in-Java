@@ -6,7 +6,6 @@ public class JottEvaluation {
 
     private static List<String> outputs = new ArrayList<>();
     private static HashMap<String, Variable> map = new HashMap<>();
-
     private static String varName = "";
 
     public static List<String> JottEvaluation(ParseTreeNode tree) {
@@ -460,7 +459,6 @@ public class JottEvaluation {
                 if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
                     ans = arithmeticOp(d1, d2, op, line_str);
                 }
-
                 map.put(varName, new Variable(varName, "int", ans));
             }
             //TODO:ERROR

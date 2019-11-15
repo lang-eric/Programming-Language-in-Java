@@ -6,7 +6,16 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="JsTypeDef-Std-Lib" type="Objective-J Library">
+        <CLASSES />
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$APPLICATION_PLUGINS_DIR$/Cappuccino Plugin/lib/Cappuccino Plugin.jar!/definitions/jstypedef" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>
