@@ -221,7 +221,7 @@ public class JottEvaluation {
 //            int varVal = Integer.parseInt(map.get(var.getValue()).getValue());
 //            String rel_op = i_expr_list.get(1).getValue();
 //            int i_expr = Integer.parseInt(i_expr_list.get(2).getValue());
-            while(ifConditionEval(children.get(2)) > 1) {
+            while(ifConditionEval(children.get(2)) > 0) {
                 BStmtListEval(children.get(7));
                 RasmtEval(children.get(4));
             }

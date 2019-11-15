@@ -20,17 +20,30 @@ public class JottParser {
      * '(' - start_paren
      * ')' - end_paren
      * '=' - assign
-     * '>' - greater
-     * '<' - less
      * 'String' - type_String
      * 'Integer' - type_Integer
      * 'Double' - type_Double
      * 'print(' - print
      * 'charAt(' - charAt
      * 'concat(' - concat
-     * A set of letters and numbers that begins with an uppercase letter            - upper_keyword
-     * A set of letters and numbers that begins with a lower letter                 - lower_keyword
-     * A set of letters, numbers, and spaces surrounded by quotation marks ('"')    - string
+     * A set of letters and numbers that begins with an uppercase letter- upper_keyword
+     * A set of letters and numbers that begins with a lowercase letter- lower_keyword
+     * A set of letters, numbers, and spaces surrounded by quoation marks ('"') - string
+     *
+     * New to phase 2:
+     * '<=' - less_eq
+     * '<' - less
+     * '>=' - greater_eq
+     * '>' - greater
+     * '==' - eq
+     * '!=' - not_eq
+     * 'if(' - if
+     * 'else' - else
+     * 'while(' - while
+     * 'for(' - for
+     * '{' - start_blk
+     * '}' - end_blk
+     *
      *
      * NodeType constants, as indicated in ParseTreeNode:
      * PROGRAM, STMT_LIST, $$, STMT, END_STMT, EXPR, START_PAREN, END_PAREN,
@@ -327,7 +340,8 @@ public class JottParser {
         //tokIndex ++;
         if (tokIndex < tokenList.size()) {
             if (!tokenList.get(tokIndex).getType().equals("end_paren")) {
-                System.out.println("Syntax Error: Missing end paren" + tokenList.get(tokIndex).line_string);
+                System.out.println("Syntax Error: Missing end paren, "+tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
                 System.exit(-1);
             }
             ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_PAREN);
@@ -337,7 +351,8 @@ public class JottParser {
         tokIndex ++;
         if (tokIndex < tokenList.size()) {
             if (!tokenList.get(tokIndex).getType().equals("start_blk")) {
-                System.out.println("Syntax Error: Missing start_blk" + tokenList.get(tokIndex).line_string);
+                System.out.println("Syntax Error: Missing start_blk, " + tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
                 System.exit(-1);
             }
             ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.START_BLK);
@@ -354,7 +369,8 @@ public class JottParser {
         //tokIndex ++;
         if (tokIndex < tokenList.size()) {
             if (!tokenList.get(tokIndex).getType().equals("end_blk")) {
-                System.out.println("Syntax Error: Missing end_blk" + tokenList.get(tokIndex).line_string);
+                System.out.println("Syntax Error: Missing end_blk, " + tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
                 System.exit(-1);
             }
             ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_BLK);
@@ -385,7 +401,8 @@ public class JottParser {
             }
 
             else {
-                System.out.println("Syntax Error: additional input" + tokenList.get(tokIndex).line_string);
+                System.out.println("Syntax Error: additional input, " + tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
                 System.exit(-1);
             }
         }
@@ -587,7 +604,7 @@ public class JottParser {
                 else {
                     //error handling
                     System.out.println("Syntax Error: variable not found at \"" + tokenList.get(tokIndex).line_string +
-                            "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ")");
+                            "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
                     System.exit(-1);
                 }
             }
@@ -597,7 +614,7 @@ public class JottParser {
                 if (type == null) {
                     JottTokenizer.Token tikToken = tokenList.get(tokIndex);
                     System.out.println("Syntax Error: Missing type declaration in line \"" +
-                            tikToken.line_string + "\" (" + fileName + ":" + tikToken.line + ")");
+                            "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") ");
                     System.exit(-1);
                 }
                 ptr = new ParseTreeNode(expr, NodeType.ID);
@@ -712,7 +729,7 @@ public class JottParser {
             if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "!=");
             if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">=");
             if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
-            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
+            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "==");
 
 
             if (children.size() > 1) {
@@ -779,7 +796,8 @@ public class JottParser {
         //tokIndex ++;
         if (tokIndex < tokenList.size()) {
             if (!tokenList.get(tokIndex).getType().equals("end_paren")) {
-                System.out.println("Syntax Error: Missing end paren" + tokenList.get(tokIndex).line_string);
+                System.out.println("Syntax Error: Missing end paren \"" + tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") ");
                 System.exit(-1);
             }
             ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_PAREN);
@@ -789,7 +807,8 @@ public class JottParser {
         tokIndex ++;
         if (tokIndex < tokenList.size()) {
             if (!tokenList.get(tokIndex).getType().equals("start_blk")) {
-                System.out.println("Syntax Error: Missing start_blk" + tokenList.get(tokIndex).line_string);
+                System.out.println("Syntax Error: Missing start_blk \"" + tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
                 System.exit(-1);
             }
             ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.START_BLK);

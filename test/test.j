@@ -1,4 +1,1 @@
-Integer x = 7;
-while(x < 8){
-x = 6;
-}
+for( Integer d = 10; d < 0 ; d = d - 1 ) { print( d ); }

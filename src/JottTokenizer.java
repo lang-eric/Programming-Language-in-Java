@@ -221,17 +221,11 @@ public class JottTokenizer {
                 Tokens.add(new Token("comma", ",",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                 continue;
             }
-            //Catches a <=
+            //Catches a <= and <
             else if (input[count] == '<') {
-                count++;
-                character_count++;
-                if (count == length) {
-                    System.out.println("Syntax error: '<' is not a valid operator, you must make it " +
-                            "'<='. At " + line_number + ", character " + (character_count + 1) +
-                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
-                    System.exit(-1);
-                }
-                else if (input[count] == '='){
+                if (input[count+1] == '='){
+                    count++;
+                    character_count++;
                     Tokens.add(new Token("less_eq", "<=", character_count, line_number, JottRunner.line_list.get(line_number - 1)));
                     continue;
                 }
@@ -240,17 +234,11 @@ public class JottTokenizer {
                     continue;
                 }
             }
-            //Catches a >=
+            //Catches a >= and >
             else if (input[count] == '>') {
-                count++;
-                character_count++;
-                if (count == length) {
-                    System.out.println("Syntax error: '>' is not a valid operator, you must make it " +
-                            "'>='. At " + line_number + ", character " + (character_count + 1) +
-                            "\n\"" + JottRunner.line_list.get(line_number - 1) + "\"");
-                    System.exit(-1);
-                }
-                else if (input[count] == '='){
+                if (input[count+1] == '='){
+                    count++;
+                    character_count++;
                     Tokens.add(new Token("greater_eq", ">=", character_count, line_number, JottRunner.line_list.get(line_number - 1)));
                     continue;
                 }
@@ -351,7 +339,6 @@ public class JottTokenizer {
                 character_count++;
                 if(count!=length){
                     if (input[count]=='\n'){
-                        line_number++;
                         character_count=0;
                         if(number_type==1) {
                             Tokens.add(new Token("double",temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
@@ -359,6 +346,7 @@ public class JottTokenizer {
                         else {
                             Tokens.add(new Token("integer", temp.toString(),character_count,line_number, JottRunner.line_list.get(line_number-1)));
                         }
+                        line_number++;
                         break;
                     }
                 }
