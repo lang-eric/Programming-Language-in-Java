@@ -4,6 +4,6 @@ import java.util.List;
  */
 public class Jott {
     public static void main(String[] args) {
-        JottRunner.Jottrunner(args[0-1+1]);
+        JottRunner.Jottrunner(args[0]);
     }
 }
