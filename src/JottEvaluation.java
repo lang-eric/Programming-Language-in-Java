@@ -231,37 +231,28 @@ public class JottEvaluation {
     }
 
     public static void BStmtEval(ParseTreeNode tree) {
-        ParseTreeNode child = tree.getAllChildren().get(0);
-        if (child.getNodeType().equals(NodeType.PRINT)) {
-            printEval(child);
-        }
-
-        else if (child.getNodeType().equals(NodeType.RASMT)) {
-            RasmtEval(child);
-        }
-
-        else if (child.getNodeType().equals(NodeType.IF)) {
-            int isTrue = ifConditionEval(tree.getAllChildren().get(2));
-            if (isTrue == 1) {
-                BStmtListEval(tree.getAllChildren().get(5));
-            }
-            else {
-                if (tree.getAllChildren().size() > 7) {
-                    BStmtListEval(tree.getAllChildren().get(9));
+        if(!tree.getAllChildren().isEmpty()) {
+            ParseTreeNode child = tree.getAllChildren().get(0);
+            if (child.getNodeType().equals(NodeType.PRINT)) {
+                printEval(child);
+            } else if (child.getNodeType().equals(NodeType.RASMT)) {
+                RasmtEval(child);
+            } else if (child.getNodeType().equals(NodeType.IF)) {
+                int isTrue = ifConditionEval(tree.getAllChildren().get(2));
+                if (isTrue == 1) {
+                    BStmtListEval(tree.getAllChildren().get(5));
+                } else {
+                    if (tree.getAllChildren().size() > 7) {
+                        BStmtListEval(tree.getAllChildren().get(9));
+                    }
                 }
+            } else if (child.getNodeType().equals(NodeType.I_EXPR)) {
+                intEval(tree);
+            } else if (child.getNodeType().equals(NodeType.D_EXPR)) {
+                doubleEval(child);
+            } else if (child.getNodeType().equals(NodeType.S_EXPR)) {
+                stringEval(child);
             }
-        }
-
-        else if (child.getNodeType().equals(NodeType.I_EXPR)){
-            intEval(tree);
-        }
-
-        else if (child.getNodeType().equals(NodeType.D_EXPR)) {
-            doubleEval(child);
-        }
-
-        else if (child.getNodeType().equals(NodeType.S_EXPR)) {
-            stringEval(child);
         }
     }
 

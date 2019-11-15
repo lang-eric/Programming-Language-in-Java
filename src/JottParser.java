@@ -97,6 +97,7 @@ public class JottParser {
         else if (type.equals("if")) {
             expandIf(tokenList, stmt);
         }
+        else if (type.equals("while")) expandWhile(tokenList,stmt);
 
         else if (type.equals("type_Double")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
@@ -311,6 +312,10 @@ public class JottParser {
             ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_BLK);
             stmt.addChild(head_e);
             tokIndex ++;
+            if (tokIndex < tokenList.size()) {
+                if (!tokenList.get(tokIndex).getValue().equals("else"))
+                    return;
+            }
             if (!tokenList.get(tokIndex).getValue().equals("else"))
                 return;
         }
@@ -680,7 +685,68 @@ public class JottParser {
         }
 
     }
+    private static void expandWhile(List<JottTokenizer.Token> tokenList, ParseTreeNode stmt) {
+        ParseTreeNode head = new ParseTreeNode(stmt, NodeType.WHILE);
+        ParseTreeNode head_s = new ParseTreeNode(stmt, NodeType.START_PAREN);
+        stmt.addChild(head);
+        stmt.addChild(head_s);
 
+        tokIndex++;
+        //we have parsed one token, while( ,which corresponds to two parse tree elements.
+        if (tokIndex < tokenList.size()) { //instead of if statements, we could have a method that just checks this condition, and errors otherwise, to make the code 100000X more readable.
+            String s = tokenList.get(tokIndex).getType();
+            ParseTreeNode expr = new ParseTreeNode(stmt, NodeType.EXPR);
+            if (s.equals("double") || s.equals("integer") || s.equals("string") || s.equals("lower_keyword")) {
+                expandExpr(tokenList, expr);
+                stmt.addChild(expr);
+            }
+            else {
+                //TODO: ERROR HANDLING
+                System.out.println("ERROR: condition for while stmt");
+                System.exit(-1);
+            }
+        }
+        else{
+            System.out.println("ERROR: While loop ended without body.");
+            System.exit(-1);
+        }
+
+        //tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (!tokenList.get(tokIndex).getType().equals("end_paren")) {
+                System.out.println("Syntax Error: Missing end paren" + tokenList.get(tokIndex).line_string);
+                System.exit(-1);
+            }
+            ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_PAREN);
+            stmt.addChild(head_e);
+        }
+
+        tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (!tokenList.get(tokIndex).getType().equals("start_blk")) {
+                System.out.println("Syntax Error: Missing start_blk" + tokenList.get(tokIndex).line_string);
+                System.exit(-1);
+            }
+            ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.START_BLK);
+            stmt.addChild(head_e);
+        }
+
+        tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            ParseTreeNode blst = new ParseTreeNode(stmt, NodeType.B_STMT_LIST);
+            expandBSTMTLIST(tokenList, blst);
+            stmt.addChild(blst);
+        }
+        if (tokIndex < tokenList.size()) {
+            if (!tokenList.get(tokIndex).getType().equals("end_blk")) {
+                System.out.println("Syntax Error: Missing end_blk" + tokenList.get(tokIndex).line_string);
+                System.exit(-1);
+            }
+            ParseTreeNode head_e = new ParseTreeNode(stmt, NodeType.END_BLK);
+            stmt.addChild(head_e);
+            tokIndex ++;
+        }
+    }
     private static void expandSExpr(List<JottTokenizer.Token> tokenList, ParseTreeNode s_expr) {
         String sExprType = tokenList.get(tokIndex).getType();
         switch (sExprType) {
