@@ -6,8 +6,8 @@ public class JottEvaluation {
 
     private static List<String> outputs = new ArrayList<>();
     private static HashMap<String, Variable> map = new HashMap<>();
-
     private static String varName = "";
+    private static int isLoopCond = 0;
 
     public static List<String> JottEvaluation(ParseTreeNode tree) {
         if (tree.getAllChildren().size() == 0) {
@@ -221,10 +221,11 @@ public class JottEvaluation {
 //            int varVal = Integer.parseInt(map.get(var.getValue()).getValue());
 //            String rel_op = i_expr_list.get(1).getValue();
 //            int i_expr = Integer.parseInt(i_expr_list.get(2).getValue());
-            while(ifConditionEval(children.get(2)) > 1) {
+            while(ifConditionEval(children.get(2)) > 0) {
                 BStmtListEval(children.get(7));
                 RasmtEval(children.get(4));
             }
+            isLoopCond = 0;
         }
 
         else {
@@ -234,6 +235,10 @@ public class JottEvaluation {
 
     public static int ifConditionEval(ParseTreeNode tree) {
         String ans = intEval(tree.getAllChildren().get(0));
+        if (tree.getNodeType().equals(NodeType.I_EXPR) || tree.getNodeType().equals(NodeType.D_EXPR)) {
+            isLoopCond = 1;
+            ans = intEval(tree);
+        }
         int isTrue = Integer.parseInt(ans);
         return isTrue;
     }
@@ -414,6 +419,7 @@ public class JottEvaluation {
                 int index = Integer.parseInt(indexAsString);
                 ans = String.valueOf(str.charAt(index));
             }
+            if (isLoopCond == 1) return ans;
             map.put(varName, new Variable(varName, "string", ans));
         }
         return ans;
@@ -458,7 +464,7 @@ public class JottEvaluation {
                 if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
                     ans = arithmeticOp(d1, d2, op, line_str);
                 }
-
+                if (isLoopCond == 1) return ans;
                 map.put(varName, new Variable(varName, "int", ans));
             }
             //TODO:ERROR
