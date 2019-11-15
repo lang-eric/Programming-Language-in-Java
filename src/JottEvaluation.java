@@ -203,6 +203,30 @@ public class JottEvaluation {
             }
         }
 
+        else if (children.get(0).getNodeType().equals(NodeType.FOR)) {
+            /*
+                0 - for
+                1 - asmt
+                2 - i_expr (the looping condition)
+                3 - end_stmt (end the looping condition)
+                4 - rasmt (do after each loop)
+                5 - end_paren (close the head)
+                6 - start_blk (start the body)
+                7 - b_stmt_list (body)
+                8 - end_blk (close the body)
+             */
+            ASMTEval(children.get(1));
+//            List<ParseTreeNode> i_expr_list = children.get(2).getAllChildren();
+//            ParseTreeNode var = i_expr_list.get(0);
+//            int varVal = Integer.parseInt(map.get(var.getValue()).getValue());
+//            String rel_op = i_expr_list.get(1).getValue();
+//            int i_expr = Integer.parseInt(i_expr_list.get(2).getValue());
+            while(ifConditionEval(children.get(2)) > 1) {
+                BStmtListEval(children.get(7));
+                RasmtEval(children.get(4));
+            }
+        }
+
         else {
 
         }
@@ -406,6 +430,8 @@ public class JottEvaluation {
             if (nums != 0) {
                 if (nums == 1) {
                     ans = children.get(0).getValue();
+                    if(tree.getParent().getNodeType().equals(NodeType.ASMT))
+                        varName = tree.getParent().getAllChildren().get(1).getValue();
                     map.put(varName, new Variable(varName, "int", ans));
                     return children.get(0).getValue();
                 }
