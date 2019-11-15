@@ -302,7 +302,7 @@ public class JottTokenizer {
                     continue;
                 }
                 else if(inputString.substring(count,count+6).equals("while(")){
-                    Tokens.add(new Token("while(","while",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                    Tokens.add(new Token("while","while(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=5;
                     character_count+=5;
                     continue;
