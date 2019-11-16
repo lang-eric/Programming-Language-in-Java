@@ -987,6 +987,7 @@ public class JottParser {
             switch (type) {
                 case "plus":
                     op = new ParseTreeNode(dexpr, NodeType.OP, "+");
+                    break;
                 case "divide":
                     op = new ParseTreeNode(dexpr, NodeType.OP, "/");
                     break;
@@ -1012,7 +1013,7 @@ public class JottParser {
                     op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
                     break;
                 case "eq":
-                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
+                    op = new ParseTreeNode(dexpr, NodeType.REL_OP, "==");
                     break;
                 default:             //op should not be null.
                     throw new IllegalStateException("Unexpected value: " + type);
