@@ -243,6 +243,9 @@ public class JottParser {
                 return;
             }
             tokIndex ++;
+            if (tokenList.get(tokIndex - 2).getType().equals("end_stmt")) {
+                tokIndex --;
+            }
         }
 
         else if (type.equals("lower_keyword")) {
