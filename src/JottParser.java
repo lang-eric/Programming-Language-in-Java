@@ -230,6 +230,9 @@ public class JottParser {
                 return;
             }
             tokIndex ++;
+            if (tokenList.get(tokIndex - 2).getType().equals("end_stmt")) {
+                tokIndex --;
+            }
         }
 
         else if (type.equals("lower_keyword")) {
@@ -713,7 +716,7 @@ public class JottParser {
             if (type.equals("not_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "!=");
             if (type.equals("greater_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, ">=");
             if (type.equals("less_eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
-            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "<=");
+            if (type.equals("eq")) op = new ParseTreeNode(dexpr, NodeType.REL_OP, "==");
 
 
             if (children.size() > 1) {
