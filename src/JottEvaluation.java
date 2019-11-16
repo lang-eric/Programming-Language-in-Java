@@ -215,7 +215,15 @@ public class JottEvaluation {
             }
         }
         else if (children.get(0).getNodeType().equals(NodeType.WHILE)) {
-            //System.out.println(children.get(3).getValue());
+            int i = children.size();
+            int y = 0;
+//            while(y<i){
+//                System.out.println(children.get(y).getNodeType());
+//                y++;
+//            }
+            while(ifConditionEval(children.get(2)) > 0){
+                BStmtListEval(children.get(5));
+            }
         }
         else {
 
