@@ -987,6 +987,7 @@ public class JottParser {
             switch (type) {
                 case "plus":
                     op = new ParseTreeNode(dexpr, NodeType.OP, "+");
+                    break;
                 case "divide":
                     op = new ParseTreeNode(dexpr, NodeType.OP, "/");
                     break;
