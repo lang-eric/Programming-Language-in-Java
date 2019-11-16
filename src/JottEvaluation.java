@@ -230,6 +230,21 @@ public class JottEvaluation {
         }
     }
 
+    private static int loopConditionEval(ParseTreeNode i_expr) {
+        ParseTreeNode leftNode = i_expr.getAllChildren().get(0);
+        ParseTreeNode rightNode = i_expr.getAllChildren().get(2);
+        if(leftNode.getNodeType().equals(NodeType.ID)) {
+
+        }
+
+        String left = intEval(i_expr.getAllChildren().get(0));
+        String op = i_expr.getAllChildren().get(1).getValue();
+        String right = intEval(i_expr.getAllChildren().get(2));
+        int leftIExpr = Integer.parseInt(left);
+        int rightIExpr = Integer.parseInt(right);
+        return Integer.parseInt(booleanOp(leftIExpr, rightIExpr, op));
+    }
+
     public static int ifConditionEval(ParseTreeNode tree) {
         String ans = intEval(tree.getAllChildren().get(0));
         int isTrue = Integer.parseInt(ans);
