@@ -35,8 +35,7 @@
  *
  *  New to phase 3:
  * 'return' -return
- *
- * Author: Justin Kolodny
+ *  'Void' -Void
  */
 
 import java.util.ArrayList;
@@ -266,8 +265,14 @@ public class JottTokenizer {
                     character_count+=3;
                     continue;
                 }
-                if(inputString.substring(count,count+4).equals("for(")){
+                else if(inputString.substring(count,count+4).equals("for(")){
                     Tokens.add(new Token("for","for(",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                    count+=3;
+                    character_count+=3;
+                    continue;
+                }
+                else if(inputString.substring(count,count+4).equals("Void")){
+                    Tokens.add(new Token("Void","Void",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=3;
                     character_count+=3;
                     continue;
