@@ -6,17 +6,16 @@ import java.util.ArrayList;
 public class JottFunction {
     public static class Parameter{
         String name;
-        type TYPE;
-        Parameter(type TYPE, String name){
+        NodeType TYPE;
+        Parameter(NodeType TYPE, String name){
             this.TYPE=TYPE;
             this.name=name;
         }
-
         public String getName() {
             return name;
         }
 
-        public type getTYPE() {
+        public NodeType getTYPE() {
             return TYPE;
         }
 
@@ -25,12 +24,10 @@ public class JottFunction {
         STRING, INTEGER, DOUBLE, VOID;
     }
     String name;
-    type return_type;
+    NodeType return_type;
     ArrayList<Parameter> parameters=new ArrayList<>();
     ParseTreeNode parent_node;
-    ArrayList<ParseTreeNode> nodes=new ArrayList<>();
-
-    JottFunction(String name, type return_type,ArrayList<Parameter> parameters, ParseTreeNode parent_node){
+    JottFunction(String name, NodeType return_type,ArrayList<Parameter> parameters, ParseTreeNode parent_node){
         this.name=name;
         this.return_type=return_type;
         this.parameters=parameters;
@@ -41,7 +38,7 @@ public class JottFunction {
         return name;
     }
 
-    public type getReturn_type() {
+    public NodeType getReturn_type() {
         return return_type;
     }
 
@@ -51,10 +48,6 @@ public class JottFunction {
 
     public ParseTreeNode getParent_node() {
         return parent_node;
-    }
-
-    public void add_Parameter(type what_type, String name){
-        this.parameters.add(new Parameter(what_type,name));
     }
     
 }

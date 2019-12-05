@@ -1,3 +1,5 @@
+import javax.xml.soap.Node;
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class JottParser {
@@ -7,6 +9,9 @@ public class JottParser {
     private static String cur_varName = "";
     private static NodeType cur_type = null;
     private static HashMap<String, NodeType> map = new HashMap<>();
+    private static HashMap<String, JottFunction> func_map = new HashMap<>();
+    private static ArrayList<JottFunction.Parameter> parameterList = new ArrayList<>();
+    private static String cur_funcName = "";
 
     /* Values and their corresponding types as indicated in JottTokenizer.
      * '+' - plus
@@ -116,7 +121,10 @@ public class JottParser {
         else if (type.equals("end_stmt") || type.equals("end_paren")) {
             tokIndex ++;
             if (tokIndex < tokenList.size()) {
-                expandStmt(tokenList, stmt);
+                if (stmt.getParent().getNodeType().equals(NodeType.FSTMT))
+                    return;
+                else
+                    expandStmt(tokenList, stmt);
             }
         }
 
@@ -127,6 +135,13 @@ public class JottParser {
             expandWhile(tokenList,stmt);
         }
 
+        else if (type.equals("Void")) {
+            stmt.addChild(new ParseTreeNode(stmt, NodeType.VOID));
+
+            tokIndex ++;
+            expandStmtWithFunc(tokenList, stmt);
+        }
+
         else if (type.equals("type_Double")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
             expandASMT(tokenList, asmt, NodeType.DOUBLE);
@@ -135,6 +150,17 @@ public class JottParser {
 
         else if (type.equals("type_Integer")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
+            if (tokenList.get(tokIndex + 1).getType().equals("lower_keyword")) {
+                if (tokenList.get(tokIndex + 2).getType().equals("start_paren")) {
+                    asmt = null;
+                    stmt.addChild(new ParseTreeNode(stmt, NodeType.INTEGER));
+                    tokIndex ++;
+                    expandStmtWithFunc(tokenList, stmt);
+                }
+            }
+
+            if (asmt == null) return;
+
             expandASMT(tokenList, asmt, NodeType.INTEGER);
             stmt.addChild(asmt);
         }
@@ -254,11 +280,183 @@ public class JottParser {
         }
     }
 
-    /**
-     * Takes a bracket statement node and recursively populates it with child nodes.
-     * @param tokenList the list of tokens from JottTokenizer
-     * @param b_stmt a node of type b_stmt
-     */
+
+
+    private static void expandStmtWithFunc(List<JottTokenizer.Token> tokenList, ParseTreeNode stmt) {
+        String type = tokenList.get(tokIndex - 1).getType();
+        NodeType t = NodeType.INTEGER;
+        if (type.equals("type_Double")) t = NodeType.DOUBLE;
+        if (type.equals("type_String")) t = NodeType.STRING;
+        if (type.equals("Void")) t = NodeType.VOID;
+
+        String func_name = tokenList.get(tokIndex).getValue();
+        ParseTreeNode id = new ParseTreeNode(stmt, NodeType.ID);
+        id.setValue(func_name);
+        stmt.addChild(id);
+
+        tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            if (tokenList.get(tokIndex).getType().equals("start_paren")) {
+                stmt.addChild(new ParseTreeNode(stmt, NodeType.START_PAREN));
+            }
+        }
+
+        tokIndex ++;
+        if (tokIndex < tokenList.size()) {
+            ParseTreeNode plst = new ParseTreeNode(stmt, NodeType.PLIST);
+            expandPList(tokenList, plst);
+            stmt.addChild(plst);
+        }
+
+        if (!tokenList.get(tokIndex).getType().equals("end_paren")) {
+            System.out.println("Missing )");
+            System.exit(-1);
+        }
+
+        if (tokenList.get(tokIndex).getType().equals("end_paren")) {
+            JottFunction func = new JottFunction(func_name, t, parameterList, stmt);
+            func_map.put(func_name, func);
+            parameterList = new ArrayList<>();
+            cur_funcName = func_name;
+            stmt.addChild(new ParseTreeNode(stmt, NodeType.END_PAREN));
+        }
+
+        tokIndex ++;
+        if (tokIndex >= tokenList.size()) {
+            System.out.println("Missing function body");
+            System.exit(-1);
+        }
+
+        if (!tokenList.get(tokIndex).getType().equals("start_blk")) {
+            System.out.println("Missing {");
+            System.exit(-1);
+        }
+
+        if (tokenList.get(tokIndex).getType().equals("start_blk")) {
+            stmt.addChild(new ParseTreeNode(stmt, NodeType.START_BLK));
+            ParseTreeNode fstmt = new ParseTreeNode(stmt, NodeType.FSTMT);
+            tokIndex ++;
+            expandFStmt(tokenList, fstmt);
+            stmt.addChild(fstmt);
+        }
+
+
+        if (tokIndex < tokenList.size()) {
+            if (tokenList.get(tokIndex).getType().equals("end_blk")) {
+                stmt.addChild(new ParseTreeNode(stmt, NodeType.END_BLK));
+                tokIndex ++;
+            }
+
+            else {
+                System.out.println("Syntax Error: Missing end bulk, "+tokenList.get(tokIndex).line_string
+                        + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
+                System.exit(-1);
+            }
+        }
+
+    }
+
+    private static void expandFStmt(List<JottTokenizer.Token> tokenList, ParseTreeNode fstmt) {
+        String type = tokenList.get(tokIndex).getType();
+
+        if (type.equals("end_blk")) {
+            fstmt.addChild(new ParseTreeNode(fstmt, NodeType.EPSILON));
+        }
+
+        else if (type.equals("return")) {
+            fstmt.addChild(new ParseTreeNode(fstmt, NodeType.RETURN));
+
+            tokIndex ++;
+            ParseTreeNode expr = new ParseTreeNode(fstmt, NodeType.EXPR);
+            expandExpr(tokenList, expr);
+            fstmt.addChild(expr);
+
+            tokIndex ++;
+            expandFStmt(tokenList, fstmt);
+        }
+
+        else if (type.equals("end_stmt")){
+            fstmt.addChild(new ParseTreeNode(fstmt, NodeType.END_STMT));
+            tokIndex ++;
+        }
+
+        else {
+
+            ParseTreeNode stmt = new ParseTreeNode(fstmt, NodeType.STMT);
+            expandStmt(tokenList, stmt);
+            fstmt.addChild(stmt);
+
+            if (tokenList.get(tokIndex - 1).getType().equals("end_stmt")) {
+                ParseTreeNode next = new ParseTreeNode(fstmt, NodeType.FSTMT);
+                expandFStmt(tokenList, next);
+                fstmt.addChild(next);
+            }
+
+            else if (tokenList.get(tokIndex).getType().equals("end_blk")) {
+                fstmt.addChild(new ParseTreeNode(fstmt, NodeType.EPSILON));
+            }
+
+            else if (tokenList.get(tokIndex).getType().equals("return")) {
+                fstmt.addChild(new ParseTreeNode(fstmt, NodeType.END_STMT));
+                ParseTreeNode next = new ParseTreeNode(fstmt, NodeType.FSTMT);
+                expandFStmt(tokenList, next);
+                fstmt.addChild(next);
+            }
+
+            else {
+                System.out.println("Error");
+                System.exit(-1);
+            }
+
+        }
+
+    }
+
+        private static void expandPList(List<JottTokenizer.Token> tokenList, ParseTreeNode plst) {
+        String type = tokenList.get(tokIndex).getType();
+        ParseTreeNode param = new ParseTreeNode(plst, NodeType.INTEGER);
+        if (type.equals("type_Double")) param = new ParseTreeNode(plst, NodeType.DOUBLE);
+        if (type.equals("type_String")) param = new ParseTreeNode(plst, NodeType.STRING);
+        plst.addChild(param);
+
+        tokIndex ++;
+        JottTokenizer.Token id = tokenList.get(tokIndex);
+        if (id.getType().equals("lower_keyword")) {
+            ParseTreeNode name = new ParseTreeNode(plst, NodeType.ID);
+            name.setValue(id.getValue());
+            plst.addChild(name);
+            JottFunction.Parameter p = new JottFunction.Parameter(param.getNodeType(), id.getValue());
+            parameterList.add(p);
+        }
+
+        tokIndex ++;
+        if (tokenList.get(tokIndex).getType().equals("comma")) {
+            ParseTreeNode c = new ParseTreeNode(plst, NodeType.COMMA);
+            plst.addChild(c);
+
+            tokIndex ++;
+            ParseTreeNode child = new ParseTreeNode(plst, NodeType.PLIST);
+            expandPList(tokenList, child);
+            plst.addChild(child);
+        }
+
+        else if (tokenList.get(tokIndex).getType().equals("end_paren")) {
+            return;
+        }
+
+        else {
+            System.out.println("Syntax Error: Missing end paren, "+tokenList.get(tokIndex).line_string
+                    + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
+            System.exit(-1);
+        }
+    }
+
+
+        /**
+         * Takes a bracket statement node and recursively populates it with child nodes.
+         * @param tokenList the list of tokens from JottTokenizer
+         * @param b_stmt a node of type b_stmt
+         */
     private static void expandBSTMT(List<JottTokenizer.Token> tokenList, ParseTreeNode b_stmt) {
         String type = tokenList.get(tokIndex).getType();
         if (type.equals("print")) {
@@ -638,6 +836,22 @@ public class JottParser {
                     tokenList.get(tokIndex + 1).getType().equals("less_eq") || tokenList.get(tokIndex + 1).getType().equals("eq") ||
                     tokenList.get(tokIndex + 1).getType().equals("not_eq")){
                 NodeType type = map.get(tokenList.get(tokIndex).getValue());
+                if (cur_funcName != null) {
+                    ArrayList<JottFunction.Parameter> plst = func_map.get(cur_funcName).getParameters();
+                    for (JottFunction.Parameter p : plst) {
+                        if (p.getName().equals(tokenList.get(tokIndex).getValue())) {
+                            type = p.getTYPE();
+                            continue;
+                        }
+                    }
+                }
+
+                if (type == null) {
+                    System.out.println("Syntax Error: variable not found at \"" + tokenList.get(tokIndex).line_string +
+                            "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
+                    System.exit(-1);
+                }
+
                 if (type.equals(NodeType.DOUBLE)) {
                     ptr = new ParseTreeNode(expr, NodeType.D_EXPR);
                     expandDExpr(tokenList, ptr);
@@ -667,6 +881,16 @@ public class JottParser {
 
             else {
                 NodeType type = map.get(tokenList.get(tokIndex).getValue());
+                if (cur_funcName != null) {
+                    ArrayList<JottFunction.Parameter> plst = func_map.get(cur_funcName).getParameters();
+                    for (JottFunction.Parameter p : plst) {
+                        if (p.getName().equals(tokenList.get(tokIndex).getValue())) {
+                            type = p.getTYPE();
+                            continue;
+                        }
+                    }
+                }
+
                 if (type == null) {
                     JottTokenizer.Token tikToken = tokenList.get(tokIndex);
                     System.out.println("Syntax Error: Missing type declaration in line \"" +

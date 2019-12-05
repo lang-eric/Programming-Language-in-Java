@@ -51,7 +51,11 @@ enum NodeType {
         RASMT,
         REL_OP,
         START_BLK,
-        END_BLK
+        END_BLK,
+        VOID,
+        FSTMT,
+        PLIST,
+        RETURN
 
 
 }
