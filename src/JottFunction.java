@@ -11,6 +11,7 @@ public class JottFunction {
             this.TYPE=TYPE;
             this.name=name;
         }
+
         public String getName() {
             return name;
         }
@@ -27,6 +28,8 @@ public class JottFunction {
     type return_type;
     ArrayList<Parameter> parameters=new ArrayList<>();
     ParseTreeNode parent_node;
+    ArrayList<ParseTreeNode> nodes=new ArrayList<>();
+
     JottFunction(String name, type return_type,ArrayList<Parameter> parameters, ParseTreeNode parent_node){
         this.name=name;
         this.return_type=return_type;
@@ -48,6 +51,10 @@ public class JottFunction {
 
     public ParseTreeNode getParent_node() {
         return parent_node;
+    }
+
+    public void add_Parameter(type what_type, String name){
+        this.parameters.add(new Parameter(what_type,name));
     }
     
 }
