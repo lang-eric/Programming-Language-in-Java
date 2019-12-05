@@ -33,6 +33,9 @@
  * '{' - start_blk
  * '}' - end_blk
  *
+ *  New to phase 3:
+ * 'return' -return
+ *
  * Author: Justin Kolodny
  */
 
@@ -299,6 +302,12 @@ public class JottTokenizer {
             if(count+6<length) {
                 if (inputString.substring(count, count+7).equals("Integer")) {
                     Tokens.add(new Token("type_Integer","Integer",character_count,line_number, JottRunner.line_list.get(line_number-1)));
+                    count+=6;
+                    character_count+=6;
+                    continue;
+                }
+                else if (inputString.substring(count,count+6).equals("return")){
+                    Tokens.add(new Token("return","return",character_count,line_number, JottRunner.line_list.get(line_number-1)));
                     count+=6;
                     character_count+=6;
                     continue;
