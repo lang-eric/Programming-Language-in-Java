@@ -20,18 +20,16 @@ public class JottFunction {
         }
 
     }
-    enum type{
-        STRING, INTEGER, DOUBLE, VOID;
-    }
+
     String name;
     NodeType return_type;
     ArrayList<Parameter> parameters=new ArrayList<>();
     ParseTreeNode parent_node;
-    JottFunction(String name, NodeType return_type,ArrayList<Parameter> parameters, ParseTreeNode parent_node){
+    JottFunction(String name, NodeType return_type,ArrayList<Parameter> parameters, ParseTreeNode body){
         this.name=name;
         this.return_type=return_type;
         this.parameters=parameters;
-        this.parent_node=parent_node;
+        this.parent_node=body;
     }
 
     public String getName() {
@@ -46,7 +44,7 @@ public class JottFunction {
         return parameters;
     }
 
-    public ParseTreeNode getParent_node() {
+    public ParseTreeNode getBody() {
         return parent_node;
     }
     

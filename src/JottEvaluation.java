@@ -6,7 +6,11 @@ public class JottEvaluation {
 
     private static List<String> outputs = new ArrayList<>();
     private static HashMap<String, Variable> map = new HashMap<>();
+    private static HashMap<String, JottFunction> func_map = new HashMap<>();
+    private static HashMap<String, Variable> cur_func_map = new HashMap<>();
+    private static ArrayList<JottFunction.Parameter> param_lst = new ArrayList<>();
     private static String varName = "";
+    private static boolean isFunc = false;
 
     public static List<String> JottEvaluation(ParseTreeNode tree) {
         if (tree.getAllChildren().size() == 0) {
@@ -157,7 +161,118 @@ public class JottEvaluation {
     }
 
 
-    public static void stmtEval(ParseTreeNode tree){
+
+    private static ArrayList<JottFunction.Parameter> pLstEval(ParseTreeNode tree) {
+        ArrayList<JottFunction.Parameter> plst = new ArrayList<>();
+        List<ParseTreeNode> children = tree.getAllChildren();
+        NodeType type = children.get(0).getNodeType();
+        String varname = children.get(1).getValue();
+        JottFunction.Parameter param = new JottFunction.Parameter(type, varname);
+        plst.add(param);
+
+        if (children.size() > 2) {
+            pLstEval(children.get(3));
+        }
+
+        return plst;
+    }
+
+
+    /**
+     * Function: fstmtEval(ParseTreeNode tree)
+     * Description: Evaluate parse tree of the defined function
+     *
+     * @param tree Evaluate parse tree of the defined function
+     * @return the result(return statement within the function) after evaluating all the statements in
+     *         the function body -- String type
+     */
+    private static String fstmtEval(ParseTreeNode tree) {
+        String ans = null;
+        List<ParseTreeNode> children = tree.getAllChildren();
+
+        if (children.get(0).getNodeType().equals(NodeType.RETURN)) {
+            ParseTreeNode child = children.get(1).getAllChildren().get(0);
+            if (child.getNodeType().equals(NodeType.D_EXPR)) {
+                ans = intEval(child);
+            }
+
+            else if (child.getNodeType().equals(NodeType.I_EXPR)) {
+                ans = intEval(child);
+            }
+
+            else {
+                ans = stringEval(child);
+            }
+        }
+
+        else if (children.get(0).getNodeType().equals(NodeType.STMT)) {
+            stmtEval(children.get(0));
+            ans = fstmtEval(children.get(1));
+        }
+
+        return ans;
+    }
+
+    private static String fcallEval(ParseTreeNode tree) {
+        List<ParseTreeNode> children = tree.getAllChildren();///
+        String fname = children.get(0).getValue();
+        JottFunction func = func_map.get(fname);
+        if (func == null) {
+            System.out.println("The function is not defined");
+            System.exit(-1);
+        }
+
+        ArrayList<JottFunction.Parameter> plst = func.getParameters();
+        ArrayList<String> vlst = new ArrayList<>();
+        fcPlstEval(children.get(2), vlst);
+        if (plst.size() != vlst.size()) {
+            System.out.println("Error");
+            System.exit(-1);
+        }
+
+        for (int i = 0; i < plst.size(); i ++) {
+            String type = null;
+            if (plst.get(i).getTYPE().equals(NodeType.INTEGER)) type = "integer";
+            else if (plst.get(i).getTYPE().equals(NodeType.DOUBLE)) type = "double";
+            else  type = "string";
+            Variable var = new Variable(plst.get(i).getName(), type, vlst.get(i));
+            cur_func_map.put(plst.get(i).getName(), var);
+        }
+        ParseTreeNode body = func.getBody();
+        isFunc = true;
+        String ans = fstmtEval(body);
+
+        return ans;
+    }
+
+    private static void fcPlstEval(ParseTreeNode tree, ArrayList<String> params) {
+        List<ParseTreeNode> children = tree.getAllChildren();
+        if (children.get(0).getNodeType().equals(NodeType.EXPR)) {
+            ParseTreeNode child = children.get(0).getAllChildren().get(0);
+            String param = null;
+            if (child.getNodeType().equals(NodeType.D_EXPR)) {
+                param = doubleEval(child);
+            }
+            else if (child.getNodeType().equals(NodeType.I_EXPR)) {
+                param = intEval(child);
+            }
+            else if (child.getNodeType().equals(NodeType.S_EXPR)) {
+                param = stringEval(child);
+            }
+            else {
+                System.out.println("error");
+                System.exit(-1);
+            }
+            params.add(param);
+        }
+
+        if (children.size() > 1) {
+            fcPlstEval(children.get(2), params);
+        }
+    }
+
+
+    private static void stmtEval(ParseTreeNode tree){
         List<ParseTreeNode> children = tree.getAllChildren();
         if (children.size() == 0) return;
         if (children.get(0).getNodeType().equals(NodeType.ASMT)) {
@@ -168,6 +283,22 @@ public class JottEvaluation {
 
         else if (children.get(0).getNodeType().equals(NodeType.STMT)) {
             stmtEval(children.get(0));
+        }
+
+        else if (children.get(0).getNodeType().equals(NodeType.F_CALL)) {
+            fcallEval(children.get(0));
+        }
+
+        else if (children.get(0).getNodeType().equals(NodeType.VOID) ||
+                children.get(0).getNodeType().equals(NodeType.INTEGER) ||
+                children.get(0).getNodeType().equals(NodeType.STR) ||
+                children.get(0).getNodeType().equals(NodeType.DOUBLE)) {
+            String fname = children.get(1).getValue();
+            NodeType type = children.get(0).getNodeType();
+            ArrayList<JottFunction.Parameter> plst = pLstEval(children.get(3));
+            ParseTreeNode fstmt = children.get(6);
+            JottFunction func = new JottFunction(fname, type, plst, fstmt);
+            func_map.put(fname, func);
         }
 
         else if (children.get(0).getNodeType().equals(NodeType.PRINT)) {
@@ -229,6 +360,7 @@ public class JottEvaluation {
 
         }
     }
+
 
     private static int loopConditionEval(ParseTreeNode i_expr) {
         ParseTreeNode leftNode = i_expr.getAllChildren().get(0);
@@ -436,15 +568,26 @@ public class JottEvaluation {
         int nums = tree.getAllChildren().size();
         List<ParseTreeNode> children = tree.getAllChildren();
         String ans = "";
+
         if (tree.getNodeType().equals(NodeType.INT) || tree.getNodeType().equals(NodeType.OP) || tree.getNodeType().equals(NodeType.REL_OP)) {
+            if (children.size() > 0) {
+                if (children.get(0).getNodeType().equals(NodeType.F_CALL)) {
+                    return fcallEval(tree.getAllChildren().get(0));
+                }
+            }
             return tree.getValue();
         }
+
         else if (tree.getNodeType().equals(NodeType.I_EXPR)) {
             if (nums != 0) {
                 if (nums == 1) {
                     ans = children.get(0).getValue();
+                    if (ans == null) {
+                        ans = intEval(children.get(0));
+                        return ans;
+                    }
                     if(tree.getParent().getNodeType().equals(NodeType.ASMT))
-                        varName = tree.getParent().getAllChildren().get(1).getValue();
+                        varName = tree.getParent().getAllChildren().get(1).getValue();///
                     map.put(varName, new Variable(varName, "int", ans));
                     return children.get(0).getValue();
                 }
@@ -477,6 +620,14 @@ public class JottEvaluation {
             return ans;
         }
         else {
+            if (isFunc) {
+                if (cur_func_map.get(tree.getValue()).getType().equals("double")) {
+                    String line_str = "\"" + tree.getLineString() + "\"" + " (" + tree.getFileName() + ":" + tree.getLine_number() + ")";
+                    System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, " + line_str);
+                    System.exit(-1);
+                }
+                return cur_func_map.get(tree.getValue()).getValue();
+            }
             if (map.get(tree.getValue()).getType().equals("double")) {
                 String line_str = "\"" + tree.getLineString() + "\"" + " (" + tree.getFileName() + ":" + tree.getLine_number() + ")";
                 System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, " + line_str);
@@ -506,6 +657,9 @@ public class JottEvaluation {
 
         else {
             Variable var = map.get(children.get(1).getAllChildren().get(0).getValue());
+            if (isFunc)
+                var = cur_func_map.get(children.get(1).getAllChildren().get(0).getValue());
+
             if (var == null) {
                 //TODO: ERROR
             }

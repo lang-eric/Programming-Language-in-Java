@@ -1,5 +1,3 @@
-import javax.xml.soap.Node;
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class JottParser {
@@ -134,7 +132,6 @@ public class JottParser {
         else if (type.equals("while")) {
             expandWhile(tokenList,stmt);
         }
-
         else if (type.equals("Void")) {
             stmt.addChild(new ParseTreeNode(stmt, NodeType.VOID));
 
@@ -144,6 +141,16 @@ public class JottParser {
 
         else if (type.equals("type_Double")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
+            if (tokenList.get(tokIndex + 1).getType().equals("lower_keyword")) {
+                if (tokenList.get(tokIndex + 2).getType().equals("start_paren")) {
+                    asmt = null;
+                    stmt.addChild(new ParseTreeNode(stmt, NodeType.DOUBLE));
+                    tokIndex ++;
+                    expandStmtWithFunc(tokenList, stmt);
+                }
+            }
+
+            if (asmt == null) return;
             expandASMT(tokenList, asmt, NodeType.DOUBLE);
             stmt.addChild(asmt);
         }
@@ -167,6 +174,16 @@ public class JottParser {
 
         else if (type.equals("type_String")) {
             ParseTreeNode asmt = new ParseTreeNode(stmt, NodeType.ASMT);
+            if (tokenList.get(tokIndex + 1).getType().equals("lower_keyword")) {
+                if (tokenList.get(tokIndex + 2).getType().equals("start_paren")) {
+                    asmt = null;
+                    stmt.addChild(new ParseTreeNode(stmt, NodeType.STR));
+                    tokIndex ++;
+                    expandStmtWithFunc(tokenList, stmt);
+                }
+            }
+
+            if (asmt == null) return;
             expandASMT(tokenList, asmt, NodeType.STR);
             stmt.addChild(asmt);
         }
@@ -178,6 +195,21 @@ public class JottParser {
                 expandRAsmt(tokenList, expr);
                 stmt.addChild(expr);
             }
+
+            else if (tokenList.get(tokIndex + 1).getType().equals("start_paren")) {
+                ParseTreeNode fcall = new ParseTreeNode(stmt, NodeType.F_CALL);
+                expandFCall(tokenList, fcall);
+                stmt.addChild(fcall);
+                if (!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+                    System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex).line_string
+                    + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
+                    System.out.print("expandFCall");
+                    System.exit(-1);
+                }
+                stmt.addChild(new ParseTreeNode(stmt, NodeType.END_STMT));
+                tokIndex ++;
+            }
+
             else {
                 expandExpr(tokenList, expr);
                 stmt.addChild(expr);
@@ -453,35 +485,43 @@ public class JottParser {
 
     private static void expandFCall(List<JottTokenizer.Token> tokenList, ParseTreeNode f_call) {
         ParseTreeNode id = new ParseTreeNode(f_call, NodeType.ID);
-        expandId(tokenList, f_call);
+        expandId(tokenList, id);
         f_call.addChild(id);
+
         tokIndex++;
         addStartParen(f_call);
+
         tokIndex++;
         if(!tokenList.get(tokIndex).getType().equals("end_paren")) {
             ParseTreeNode fc_p_list = new ParseTreeNode(f_call, NodeType.FC_P_LIST);
             expandFCallParamList(tokenList, fc_p_list);
+            f_call.addChild(fc_p_list);
         }
+
         addEndParen(f_call);
-        tokIndex++;
-        if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
-            System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex).line_string
-                    + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
-            System.out.print("expandFCall");
-            System.exit(-1);
-        }
-        f_call.addChild(new ParseTreeNode(f_call, NodeType.END_STMT));
-        tokIndex++;
+        tokIndex ++;
+
+//        tokIndex++;
+//        if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+//            System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex).line_string
+//                    + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
+//            System.out.print("expandFCall");
+//            System.exit(-1);
+//        }
+//        f_call.addChild(new ParseTreeNode(f_call, NodeType.END_STMT));
+//        tokIndex++;
     }
 
     private static void expandFCallParamList(List<JottTokenizer.Token> tokenList, ParseTreeNode fc_p_list) {
         ParseTreeNode nextExpr = new ParseTreeNode(fc_p_list, NodeType.EXPR);
         expandExpr(tokenList, nextExpr);
         fc_p_list.addChild(nextExpr);
-        tokIndex++;
+
+//        tokIndex++;
         if(tokenList.get(tokIndex).getType().equals("comma")) {
             fc_p_list.addChild(new ParseTreeNode(fc_p_list, NodeType.COMMA));
             ParseTreeNode nextFCPList = new ParseTreeNode(fc_p_list, NodeType.FC_P_LIST);
+
             tokIndex++;
             expandFCallParamList(tokenList, nextFCPList);
             fc_p_list.addChild(nextFCPList);
@@ -915,8 +955,42 @@ public class JottParser {
                 }
             }
 
+            else if (tokenList.get(tokIndex + 1).getType().equals("start_paren")) {
+                JottFunction func = func_map.get(tokenList.get(tokIndex).getValue());
+                NodeType return_type = func.getReturn_type();
+                ptr = new ParseTreeNode(expr, NodeType.I_EXPR);
+                ParseTreeNode expr_child = new ParseTreeNode(ptr, NodeType.INT);
+                if (return_type.equals(NodeType.DOUBLE)) {
+                    expr_child = new ParseTreeNode(ptr, NodeType.DBL);
+                    expandDBL(tokenList, expr_child);
+                }
+
+                else if (return_type.equals(NodeType.STR)) {
+                    expr_child = new ParseTreeNode(ptr, NodeType.STR);
+                    expandStrLiteral(tokenList, expr_child);
+                }
+
+                else if (return_type.equals(NodeType.INTEGER)) {
+                    expr_child = new ParseTreeNode(ptr, NodeType.INT);
+                    expandDBL(tokenList, expr_child);
+                }
+
+                else {
+                    System.out.println(" void error");
+                }
+                ptr.addChild(expr_child);
+                expr.addChild(ptr);
+            }
+
             else {
                 NodeType type = map.get(tokenList.get(tokIndex).getValue());
+                JottTokenizer.Token token = tokenList.get(tokIndex);
+//                if (token.getType().equals("lower_keyword") && !token.getType().equals("print")
+//                    && !token.getType().equals("concat")) {
+//                    if (tokenList.get(tokIndex + 1).getType().equals("start_paren")) {
+//                        ParseTreeNode fcall = new ParseTreeNode()
+//                    }
+//                }
                 if (cur_funcName != null) {
                     ArrayList<JottFunction.Parameter> plst = func_map.get(cur_funcName).getParameters();
                     for (JottFunction.Parameter p : plst) {
@@ -1260,8 +1334,9 @@ public class JottParser {
     private static void expandStrLiteral(List<JottTokenizer.Token> tokenList, ParseTreeNode str_literal) {
         str_literal.addChild(new ParseTreeNode(str_literal, NodeType.QUOTE,"\""));
         ParseTreeNode str = new ParseTreeNode(str_literal, NodeType.STR);
-        str_literal.addChild(str);
+        str.setValue(tokenList.get(tokIndex).getValue());
         str.addChild(new ParseTreeNode(str, NodeType.STR, tokenList.get(tokIndex).getValue()));
+        str_literal.addChild(str);
         str_literal.addChild(new ParseTreeNode(str_literal, NodeType.QUOTE, "\""));
     }
 
@@ -1447,6 +1522,13 @@ public class JottParser {
         ParseTreeNode child = null;
         String sign = tokenList.get(tokIndex - 1).getType();
         String newSign = "";
+
+        if (tokenList.get(tokIndex).getType().equals("lower_keyword")) {
+            ParseTreeNode fcall = new ParseTreeNode(dbl, NodeType.F_CALL);
+            expandFCall(tokenList, fcall);
+            dbl.addChild(fcall);
+            return;
+        }
 
         if (sign.equals("minus")) {
             if (tokenList.get(tokIndex - 2).getType().equals("plus") || tokenList.get(tokIndex - 2).getType().equals("minus") ||
