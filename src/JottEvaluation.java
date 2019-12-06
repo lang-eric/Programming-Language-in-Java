@@ -189,24 +189,21 @@ public class JottEvaluation {
         String ans = null;
         List<ParseTreeNode> children = tree.getAllChildren();
 
-        if (children.get(0).getNodeType().equals(NodeType.RETURN)) {
-            ParseTreeNode child = children.get(1).getAllChildren().get(0);
-            if (child.getNodeType().equals(NodeType.D_EXPR)) {
-                ans = intEval(child);
-            }
+        if (children.size() > 0) {
 
-            else if (child.getNodeType().equals(NodeType.I_EXPR)) {
-                ans = intEval(child);
+            if (children.get(0).getNodeType().equals(NodeType.RETURN)) {
+                ParseTreeNode child = children.get(1).getAllChildren().get(0);
+                if (child.getNodeType().equals(NodeType.D_EXPR)) {
+                    ans = intEval(child);
+                } else if (child.getNodeType().equals(NodeType.I_EXPR)) {
+                    ans = intEval(child);
+                } else {
+                    ans = stringEval(child);
+                }
+            } else if (children.get(0).getNodeType().equals(NodeType.STMT)) {
+                stmtEval(children.get(0));
+                ans = fstmtEval(children.get(2));
             }
-
-            else {
-                ans = stringEval(child);
-            }
-        }
-
-        else if (children.get(0).getNodeType().equals(NodeType.STMT)) {
-            stmtEval(children.get(0));
-            ans = fstmtEval(children.get(1));
         }
 
         return ans;
@@ -231,7 +228,7 @@ public class JottEvaluation {
 
         for (int i = 0; i < plst.size(); i ++) {
             String type = null;
-            if (plst.get(i).getTYPE().equals(NodeType.INTEGER)) type = "integer";
+            if (plst.get(i).getTYPE().equals(NodeType.INTEGER)) type = "int";
             else if (plst.get(i).getTYPE().equals(NodeType.DOUBLE)) type = "double";
             else  type = "string";
             Variable var = new Variable(plst.get(i).getName(), type, vlst.get(i));
@@ -431,11 +428,16 @@ public class JottEvaluation {
         String var_name = children.get(0).getValue();
         ParseTreeNode expr = children.get(1);
 
-        if (!map.containsKey(var_name)) {
-            System.out.println("Variable not initialized...");
-        }
+
 
         Variable val = map.get(var_name);
+//        if (!map.containsKey(var_name)) {
+//            System.out.println("Variable not initialized...");
+//        }
+
+        if(isFunc) {
+            val = cur_func_map.get(var_name);
+        }
 
         if (expr.getNodeType().equals(NodeType.EXPR)) {
             expr = expr.getAllChildren().get(0);
@@ -465,6 +467,10 @@ public class JottEvaluation {
                     System.out.println("Syntax Error: Invalid type in re-assignment: Expected " + type + " got Integer" + ", " +
                             "\"" + children.get(0).getLineString() + "\"" + " (" + children.get(0).getFileName() + ":" + children.get(0).getLine_number() + ")");
                     System.exit(-1);
+                }
+                if (isFunc) {
+                    cur_func_map.put(var_name, new Variable(var_name, "int", ans));
+                    return;
                 }
                 map.put(var_name, new Variable(var_name, "int", ans));
             }
@@ -560,6 +566,10 @@ public class JottEvaluation {
                 ans = String.valueOf(str.charAt(index));
             }
             map.put(varName, new Variable(varName, "string", ans));
+        }
+
+        else if (type.equals(NodeType.ID)) {
+            ans = cur_func_map.get(tree.getValue()).getValue();
         }
         return ans;
     }

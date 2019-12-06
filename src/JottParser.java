@@ -419,6 +419,7 @@ public class JottParser {
             fstmt.addChild(stmt);
 
             if (tokenList.get(tokIndex - 1).getType().equals("end_stmt")) {
+                fstmt.addChild(new ParseTreeNode(fstmt, NodeType.END_STMT));
                 ParseTreeNode next = new ParseTreeNode(fstmt, NodeType.FSTMT);
                 expandFStmt(tokenList, next);
                 fstmt.addChild(next);
