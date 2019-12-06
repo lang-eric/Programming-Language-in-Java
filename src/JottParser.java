@@ -412,7 +412,7 @@ public class JottParser {
 
     }
 
-        private static void expandPList(List<JottTokenizer.Token> tokenList, ParseTreeNode plst) {
+    private static void expandPList(List<JottTokenizer.Token> tokenList, ParseTreeNode plst) {
         String type = tokenList.get(tokIndex).getType();
         ParseTreeNode param = new ParseTreeNode(plst, NodeType.INTEGER);
         if (type.equals("type_Double")) param = new ParseTreeNode(plst, NodeType.DOUBLE);
@@ -451,12 +451,48 @@ public class JottParser {
         }
     }
 
+    private static void expandFCall(List<JottTokenizer.Token> tokenList, ParseTreeNode f_call) {
+        ParseTreeNode id = new ParseTreeNode(f_call, NodeType.ID);
+        expandId(tokenList, f_call);
+        f_call.addChild(id);
+        tokIndex++;
+        addStartParen(f_call);
+        tokIndex++;
+        if(!tokenList.get(tokIndex).getType().equals("end_paren")) {
+            ParseTreeNode fc_p_list = new ParseTreeNode(f_call, NodeType.FC_P_LIST);
+            expandFCallParamList(tokenList, fc_p_list);
+        }
+        addEndParen(f_call);
+        tokIndex++;
+        if(!tokenList.get(tokIndex).getType().equals("end_stmt")) {
+            System.out.println("Syntax Error: missing end statement, \"" + tokenList.get(tokIndex).line_string
+                    + "\" (" + fileName + ":" + tokenList.get(tokIndex).line + ") " + tokenList.get(tokIndex).getValue());
+            System.out.print("expandFCall");
+            System.exit(-1);
+        }
+        f_call.addChild(new ParseTreeNode(f_call, NodeType.END_STMT));
+        tokIndex++;
+    }
 
-        /**
-         * Takes a bracket statement node and recursively populates it with child nodes.
-         * @param tokenList the list of tokens from JottTokenizer
-         * @param b_stmt a node of type b_stmt
-         */
+    private static void expandFCallParamList(List<JottTokenizer.Token> tokenList, ParseTreeNode fc_p_list) {
+        ParseTreeNode nextExpr = new ParseTreeNode(fc_p_list, NodeType.EXPR);
+        expandExpr(tokenList, nextExpr);
+        fc_p_list.addChild(nextExpr);
+        tokIndex++;
+        if(tokenList.get(tokIndex).getType().equals("comma")) {
+            fc_p_list.addChild(new ParseTreeNode(fc_p_list, NodeType.COMMA));
+            ParseTreeNode nextFCPList = new ParseTreeNode(fc_p_list, NodeType.FC_P_LIST);
+            tokIndex++;
+            expandFCallParamList(tokenList, nextFCPList);
+            fc_p_list.addChild(nextFCPList);
+        }
+    }
+
+    /**
+     * Takes a bracket statement node and recursively populates it with child nodes.
+     * @param tokenList the list of tokens from JottTokenizer
+     * @param b_stmt a node of type b_stmt
+     */
     private static void expandBSTMT(List<JottTokenizer.Token> tokenList, ParseTreeNode b_stmt) {
         String type = tokenList.get(tokIndex).getType();
         if (type.equals("print")) {

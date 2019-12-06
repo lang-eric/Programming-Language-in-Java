@@ -55,7 +55,8 @@ enum NodeType {
         VOID,
         FSTMT,
         PLIST,
-        RETURN
-
+        RETURN,
+        F_CALL,
+        FC_P_LIST
 
 }
