@@ -162,8 +162,7 @@ public class JottEvaluation {
 
 
 
-    private static ArrayList<JottFunction.Parameter> pLstEval(ParseTreeNode tree) {
-        ArrayList<JottFunction.Parameter> plst = new ArrayList<>();
+    private static ArrayList<JottFunction.Parameter> pLstEval(ParseTreeNode tree, ArrayList<JottFunction.Parameter> plst) {
         List<ParseTreeNode> children = tree.getAllChildren();
         NodeType type = children.get(0).getNodeType();
         String varname = children.get(1).getValue();
@@ -171,7 +170,7 @@ public class JottEvaluation {
         plst.add(param);
 
         if (children.size() > 2) {
-            pLstEval(children.get(3));
+            pLstEval(children.get(3), plst);
         }
 
         return plst;
@@ -295,7 +294,8 @@ public class JottEvaluation {
                 children.get(0).getNodeType().equals(NodeType.DOUBLE)) {
             String fname = children.get(1).getValue();
             NodeType type = children.get(0).getNodeType();
-            ArrayList<JottFunction.Parameter> plst = pLstEval(children.get(3));
+            ArrayList<JottFunction.Parameter> plst = new ArrayList<>();
+            pLstEval(children.get(3),plst);
             ParseTreeNode fstmt = children.get(6);
             JottFunction func = new JottFunction(fname, type, plst, fstmt);
             func_map.put(fname, func);
@@ -613,7 +613,7 @@ public class JottEvaluation {
 
                 if (op.equals("+") || op.equals("-") || op.equals("/") || op.equals("*") || op.equals("^")) {
                     ans = arithmeticOp(d1, d2, op, line_str);
-                }
+                }///
                 map.put(varName, new Variable(varName, "int", ans));
             }
             //TODO:ERROR
@@ -676,6 +676,11 @@ public class JottEvaluation {
         List<ParseTreeNode> children = tree.getAllChildren();
         String ans = "";
         if (tree.getNodeType().equals(NodeType.DBL) || tree.getNodeType().equals(NodeType.OP) || tree.getNodeType().equals(NodeType.REL_OP)) {
+            if (children.size() > 0) {
+                if (children.get(0).getNodeType().equals(NodeType.F_CALL)) {
+                    return fcallEval(tree.getAllChildren().get(0));
+                }
+            }
             return tree.getValue();
         }
 
@@ -710,6 +715,14 @@ public class JottEvaluation {
         }
 
         else {
+            if (isFunc) {
+                if (cur_func_map.get(tree.getValue()).getType().equals("int")) {
+                    String line_str = "\"" + tree.getLineString() + "\"" + " (" + tree.getFileName() + ":" + tree.getLine_number() + ")";
+                    System.out.println("Syntax Error: Type mismatch: Expected Integer got Double, " + line_str);
+                    System.exit(-1);
+                }
+                return cur_func_map.get(tree.getValue()).getValue();
+            }
             if (map.get(tree.getValue()).getType().equals("int")) {
                 String line_str = "\"" + tree.getLineString() + "\"" + " (" + tree.getFileName() + ":" + tree.getLine_number() + ")";
                 System.out.println("Syntax Error: Type mismatch: Expected Double got Integer, " + line_str);

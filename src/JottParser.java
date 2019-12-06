@@ -912,7 +912,7 @@ public class JottParser {
                     tokenList.get(tokIndex + 1).getType().equals("less_eq") || tokenList.get(tokIndex + 1).getType().equals("eq") ||
                     tokenList.get(tokIndex + 1).getType().equals("not_eq")){
                 NodeType type = map.get(tokenList.get(tokIndex).getValue());
-                if (cur_funcName != null) {
+                if (func_map.get(cur_funcName) != null) {
                     ArrayList<JottFunction.Parameter> plst = func_map.get(cur_funcName).getParameters();
                     for (JottFunction.Parameter p : plst) {
                         if (p.getName().equals(tokenList.get(tokIndex).getValue())) {
@@ -991,7 +991,7 @@ public class JottParser {
 //                        ParseTreeNode fcall = new ParseTreeNode()
 //                    }
 //                }
-                if (cur_funcName != null) {
+                if (func_map.get(cur_funcName) != null) {
                     ArrayList<JottFunction.Parameter> plst = func_map.get(cur_funcName).getParameters();
                     for (JottFunction.Parameter p : plst) {
                         if (p.getName().equals(tokenList.get(tokIndex).getValue())) {
